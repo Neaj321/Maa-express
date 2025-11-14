@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Dashboard</h2>
+
+{% if current_user %}
+<p>Welcome, {{ current_user.first_name }} {{ current_user.last_name }}</p>
+<p>Email: {{ current_user.email }}</p>
+<p>Phone: {{ current_user.phone_country_code }} {{ current_user.phone_number }}</p>
+
+<p><a href="{{ url_for('category1.new_listing') }}">Create new In-flight luggage listing</a></p>
+{% else %}
+<p>Please login to see your dashboard.</p>
+{% endif %}
+{% endblock %}

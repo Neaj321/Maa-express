@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>In-flight Luggage Listing</h2>
+
+<h3>Flight Info</h3>
+<p>Flight: {{ listing.flight_number }} ({{ listing.airline_name }}) on {{ listing.flight_date }}</p>
+
+<h3>Route</h3>
+<p>Origin: {{ listing.origin_city }}, {{ listing.origin_country }} {{ listing.origin_postcode }}</p>
+<p>Destination: {{ listing.destination_city }}, {{ listing.destination_country }} {{ listing.destination_postcode }}</p>
+
+<h3>Service Type</h3>
+<p>{{ listing.service_type }}</p>
+
+<h3>Cargo</h3>
+<p>Weight: {{ listing.cargo_weight_kg }} kg</p>
+<p>Price: {{ listing.currency_code }} {{ "%.2f"|format(listing.price_amount) }}</p>
+
+<h3>Note</h3>
+<p>{{ listing.pickup_delivery_note }}</p>
+
+<p><em>Origin and destination phone numbers and email are hidden until purchase and verification.</em></p>
+
+{% if current_user %}
+  <h3>Buy Now</h3>
+  <div id="paypal-button-container"></div>
+  <p id="paypal-msg"></p>
+{% else %}
+  <p><a href="{{ url_for('main.render_template_name', template='login.html') }}">Login</a> or <a href="{{ url_for('main.render_template_name', template='register.html') }}">Register</a> to buy this luggage space.</p>
+{% endif %}
+
+{% if current_user %}
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency={{ listing.currency_code }}"></script>
+<script>
+  const listingUid = "{{ listing.listing_uid }}";
+  const price = {{ listing.price_amount | safe }};
+  const currency = "{{ listing.currency_code }}";
+  const msgEl = document.getElementById("paypal-msg");
+
+  paypal.Buttons({
+    createOrder: function(data, actions) {
+      return actions.order.create({
+        purchase_units: [{
+          amount: {
+            value: price.toFixed(2),
+            currency_code: currency
+          }
+        }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(function(details) {
+        return fetch("/category1/api/" + listingUid + "/purchase", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            order_id: data.orderID,
+            paypal_details: details
+          })
+        }).then(res => res.json()).then(resp => {
+          if (resp.next_url) {
+            window.location.href = resp.next_url;
+          } else {
+            msgEl.textContent = "Payment saved but no redirect URL.";
+          }
+        });
+      });
+    },
+    onError: function(err) {
+      console.error(err);
+      msgEl.textContent = "Payment error: " + err;
+    }
+  }).render('#paypal-button-container');
+</script>
+{% endif %}
+{% endblock %}

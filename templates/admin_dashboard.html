@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+
+<h3>Analytics</h3>
+<ul>
+  <li>Total users: {{ total_users }}</li>
+  <li>Active users: {{ active_users }}</li>
+  <li>Total listings (Category 1): {{ total_listings }}</li>
+  <li>Approved listings: {{ approved_listings }}</li>
+  <li>Sold listings: {{ sold_listings }}</li>
+  <li>Rejected listings: {{ rejected_listings }}</li>
+  <li>Total visits: {{ total_visits }}</li>
+  <li>Today's visits: {{ today_visits }}</li>
+  <li>Logins in last {{ login_days }} days: {{ logins_last_n }}</li>
+</ul>
+
+<h3>Pending Listings</h3>
+{% if pending %}
+<table class="listing-table">
+  <tr>
+    <th>Listing UID</th>
+    <th>Seller</th>
+    <th>Flight</th>
+    <th>Price</th>
+    <th>Action</th>
+  </tr>
+  {% for l in pending %}
+  <tr>
+    <td>{{ l.listing_uid }}</td>
+    <td>{{ l.seller.email }}</td>
+    <td>{{ l.flight_number }} – {{ l.flight_date }}</td>
+    <td>{{ l.currency_code }} {{ "%.2f"|format(l.price_amount) }}</td>
+    <td>
+      <form method="POST" action="{{ url_for('admin.update_category1_status', listing_uid=l.listing_uid) }}">
+        <select name="status" required>
+          <option value="">--Change status--</option>
+          <option value="approved">Approve</option>
+          <option value="rejected">Reject</option>
+        </select>
+        <input type="text" name="reason" placeholder="Reason (optional)">
+        <button type="submit">Save</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>No pending listings.</p>
+{% endif %}
+
+<h3>Approved Listings</h3>
+{% if approved %}
+<ul>
+  {% for l in approved %}
+  <li>{{ l.listing_uid }} – {{ l.flight_number }} – {{ l.currency_code }} {{ "%.2f"|format(l.price_amount) }}</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No approved listings.</p>
+{% endif %}
+
+<h3>Sold Listings</h3>
+{% if sold %}
+<ul>
+  {% for l in sold %}
+  <li>{{ l.listing_uid }} – {{ l.flight_number }} – Buyer: {{ l.buyer.email if l.buyer_id else 'N/A' }}</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No sold listings.</p>
+{% endif %}
+
+<h3>Rejected Listings</h3>
+{% if rejected %}
+<ul>
+  {% for l in rejected %}
+  <li>{{ l.listing_uid }} – {{ l.flight_number }}</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No rejected listings.</p>
+{% endif %}
+
+<p><a href="{{ url_for('admin.users') }}">Manage Users</a></p>
+{% endblock %}

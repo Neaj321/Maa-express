@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>View Seller Contact & Secret Codes</h2>
+
+<p>Please verify your phone number to see the contact details for parcel carrier.</p>
+
+<p>We will send an OTP to your sender phone number that you provided.</p>
+
+<div id="recaptcha-container"></div>
+
+<button id="send-otp">Send OTP</button>
+<input type="text" id="otp-code" placeholder="Enter OTP">
+<button id="verify-otp">Verify & View Details</button>
+
+<p id="msg"></p>
+
+<div id="details" style="display:none;">
+  <h3>Parcel Details</h3>
+  <p>Parcel Number: <span id="parcel-number"></span></p>
+  <p>Secret Code 1 (handover): <span id="secret1"></span></p>
+  <p>Secret Code 2 (delivery): <span id="secret2"></span></p>
+  <p><em>Please share Secret Code 2 with parcel receiver as they will need this to collect the parcel.</em></p>
+
+  <h3>Seller Contact Details</h3>
+  <p>Origin Phone: <span id="seller-origin-phone"></span></p>
+  <p>Destination Phone: <span id="seller-dest-phone"></span></p>
+  <p>Email: <span id="seller-email"></span></p>
+
+  <h3>Message to Seller</h3>
+  <textarea id="buyer-message" maxlength="200" placeholder="Write a short message (max 200 characters)"></textarea><br>
+  <small>(This is just a placeholder text box; backend messaging not implemented yet.)</small>
+</div>
+
+<script type="module">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "{{ config.FIREBASE_API_KEY }}",
+    authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+    projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+    appId: "{{ config.FIREBASE_APP_ID }}",
+    messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
+    measurementId: "{{ config.FIREBASE_MEASUREMENT_ID }}"
+  };
+
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const recaptchaVerifier = new RecaptchaVerifier(
+    'recaptcha-container',
+    { size: 'invisible' },
+    auth
+  );
+
+  const sendBtn = document.getElementById("send-otp");
+  const verifyBtn = document.getElementById("verify-otp");
+  const otpInput = document.getElementById("otp-code");
+  const msgEl = document.getElementById("msg");
+  const detailsDiv = document.getElementById("details");
+
+  const parcelNumberSpan = document.getElementById("parcel-number");
+  const secret1Span = document.getElementById("secret1");
+  const secret2Span = document.getElementById("secret2");
+  const originPhoneSpan = document.getElementById("seller-origin-phone");
+  const destPhoneSpan = document.getElementById("seller-dest-phone");
+  const emailSpan = document.getElementById("seller-email");
+
+  let confirmationResultGlobal = null;
+
+  sendBtn.addEventListener("click", async () => {
+    msgEl.textContent = "";
+    const fullPhone = "{{ buyer_info.sender_phone_country_code }}{{ buyer_info.sender_phone_number }}";
+    try {
+      confirmationResultGlobal = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifier);
+      msgEl.textContent = "OTP sent to " + fullPhone;
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Error sending OTP: " + err.message;
+    }
+  });
+
+  verifyBtn.addEventListener("click", async () => {
+    if (!confirmationResultGlobal) {
+      msgEl.textContent = "Please send OTP first.";
+      return;
+    }
+    const code = otpInput.value.trim();
+    if (!code) {
+      msgEl.textContent = "Enter OTP.";
+      return;
+    }
+    try {
+      await confirmationResultGlobal.confirm(code);
+
+      const res = await fetch("{{ url_for('category1.buyer_verify_phone', listing_uid=listing.listing_uid) }}", {
+        method: "POST"
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        msgEl.textContent = "Error: " + (data.error || "Verification failed");
+        return;
+      }
+
+      parcelNumberSpan.textContent = data.parcel_number;
+      secret1Span.textContent = data.secret_code_handover;
+      secret2Span.textContent = data.secret_code_delivery;
+      originPhoneSpan.textContent = data.seller_origin_phone;
+      destPhoneSpan.textContent = data.seller_destination_phone;
+      emailSpan.textContent = data.seller_email;
+
+      detailsDiv.style.display = "block";
+      msgEl.textContent = "Phone verified. Details unlocked.";
+
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "OTP verification failed: " + err.message;
+    }
+  });
+</script>
+{% endblock %}

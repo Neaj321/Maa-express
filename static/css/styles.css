@@ -1,0 +1,75 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f7f7f7;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+
+nav a {
+  margin-right: 10px;
+  text-decoration: none;
+  color: #1a73e8;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+main {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+form label {
+  display: block;
+  margin: 6px 0;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px;
+  margin-top: 2px;
+}
+
+button {
+  padding: 6px 12px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.listing-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.listing-table th,
+.listing-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.listing-table th {
+  background-color: #f0f0f0;
+}

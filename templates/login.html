@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Login</h2>
+
+<form id="login-form">
+  <label>Email
+    <input type="email" name="email" required>
+  </label><br>
+  <label>Password
+    <input type="password" name="password" required>
+  </label><br>
+  <button type="submit">Login</button>
+</form>
+
+<p id="login-message"></p>
+
+<script type="module">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "{{ config.FIREBASE_API_KEY }}",
+    authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+    projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+    appId: "{{ config.FIREBASE_APP_ID }}",
+    messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
+    measurementId: "{{ config.FIREBASE_MEASUREMENT_ID }}"
+  };
+
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const form = document.getElementById("login-form");
+  const msgEl = document.getElementById("login-message");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msgEl.textContent = "Logging in...";
+
+    const formData = new FormData(form);
+    const email = formData.get("email");
+    const password = formData.get("password");
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const idToken = await user.getIdToken();
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        msgEl.textContent = "Error: " + (data.error || "Login failed");
+        return;
+      }
+
+      msgEl.textContent = "Login successful. Redirecting...";
+      window.location.href = "/";
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Firebase error: " + err.message;
+    }
+  });
+</script>
+{% endblock %}

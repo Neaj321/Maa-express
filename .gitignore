@@ -1,0 +1,26 @@
+# Python venv
+venv/
+.env
+*.pyc
+__pycache__/
+
+# Firebase admin key
+serviceAccountKey.json
+firebase_admin_key.json
+*.json
+
+# VS Code settings
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Pycache and build
+dist/
+build/
+*.egg-info/
+
+# Ignore OS crap
+.DS_Store
+Thumbs.db

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create Account</h2>
+
+<form id="register-form">
+  <label>First Name
+    <input type="text" name="first_name" required>
+  </label><br>
+
+  <label>Last Name
+    <input type="text" name="last_name" required>
+  </label><br>
+
+  <label>Email
+    <input type="email" name="email" required>
+  </label><br>
+
+  <label>Phone Country Code
+    <input type="text" name="phone_country_code" placeholder="+61" required>
+  </label><br>
+
+  <label>Phone Number
+    <input type="text" name="phone_number" required>
+  </label><br>
+
+  <label>Password
+    <input type="password" name="password" required minlength="6">
+  </label><br>
+
+  <button type="button" id="send-otp-btn">Send OTP</button>
+  <div id="recaptcha-container"></div>
+
+  <label>Enter OTP
+    <input type="text" id="otp-code" placeholder="SMS code">
+  </label><br>
+
+  <button type="submit">Sign up</button>
+</form>
+
+<p id="register-message"></p>
+
+<script type="module">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    linkWithPhoneNumber,
+    RecaptchaVerifier
+  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "{{ config.FIREBASE_API_KEY }}",
+    authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+    projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+    appId: "{{ config.FIREBASE_APP_ID }}",
+    messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
+    measurementId: "{{ config.FIREBASE_MEASUREMENT_ID }}"
+  };
+
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const form = document.getElementById("register-form");
+  const msgEl = document.getElementById("register-message");
+  const sendOtpBtn = document.getElementById("send-otp-btn");
+  const otpInput = document.getElementById("otp-code");
+
+  let confirmationResultGlobal = null;
+
+  const recaptchaVerifier = new RecaptchaVerifier(
+    'recaptcha-container',
+    { size: 'invisible' },
+    auth
+  );
+
+  sendOtpBtn.addEventListener("click", async () => {
+    msgEl.textContent = "";
+    const formData = new FormData(form);
+    const phone_country_code = formData.get("phone_country_code");
+    const phone_number = formData.get("phone_number");
+    const fullPhone = phone_country_code + phone_number;
+    const email = formData.get("email");
+    const password = formData.get("password");
+
+    if (!email || !password) {
+      msgEl.textContent = "Please enter email and password first.";
+      return;
+    }
+
+    try {
+      let user = auth.currentUser;
+      if (!user) {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        user = userCredential.user;
+      }
+
+      confirmationResultGlobal = await linkWithPhoneNumber(user, fullPhone, recaptchaVerifier);
+      msgEl.textContent = "OTP sent to " + fullPhone + ". Please enter it and click Sign up.";
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Error sending OTP: " + err.message;
+    }
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msgEl.textContent = "Verifying OTP...";
+
+    const formData = new FormData(form);
+    const first_name = formData.get("first_name");
+    const last_name = formData.get("last_name");
+    const email = formData.get("email");
+    const phone_country_code = formData.get("phone_country_code");
+    const phone_number = formData.get("phone_number");
+
+    try {
+      if (!confirmationResultGlobal) {
+        msgEl.textContent = "Please click 'Send OTP' first.";
+        return;
+      }
+
+      const code = otpInput.value.trim();
+      if (!code) {
+        msgEl.textContent = "Please enter OTP.";
+        return;
+      }
+
+      await confirmationResultGlobal.confirm(code);
+
+      const user = auth.currentUser;
+      if (!user) {
+        msgEl.textContent = "User not signed in after OTP.";
+        return;
+      }
+
+      const idToken = await user.getIdToken();
+
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idToken,
+          first_name,
+          last_name,
+          phone_country_code,
+          phone_number,
+          phone_verified: true
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        msgEl.textContent = "Error: " + (data.error || "Registration failed");
+        return;
+      }
+
+      msgEl.textContent = "Registered & phone verified. Redirecting...";
+      window.location.href = "/";
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "OTP verification failed: " + err.message;
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin – Users</h2>
+<p>Login counts shown for last {{ login_days }} days.</p>
+
+<table class="listing-table">
+  <tr>
+    <th>Email</th>
+    <th>Name</th>
+    <th>Created</th>
+    <th>Active</th>
+    <th>Admin</th>
+    <th>Logins ({{ login_days }} days)</th>
+  </tr>
+  {% for u, login_count in user_stats %}
+  <tr>
+    <td>{{ u.email }}</td>
+    <td>{{ u.first_name }} {{ u.last_name }}</td>
+    <td>{{ u.created_at }}</td>
+    <td>{{ 'Yes' if u.is_active else 'No' }}</td>
+    <td>{{ 'Yes' if u.is_admin else 'No' }}</td>
+    <td>{{ login_count }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

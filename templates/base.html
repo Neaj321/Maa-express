@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Maa Express</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+<header>
+  <div class="logo">Maa Express</div>
+  <nav>
+    <a href="{{ url_for('main.index') }}">Home</a>
+    {% if current_user %}
+      <a href="{{ url_for('main.render_template_name', template='dashboard.html') }}">My Account</a>
+      {% if current_user.is_admin %}
+        <a href="{{ url_for('admin.dashboard') }}">Admin</a>
+      {% endif %}
+      <a href="#" id="logout-link">Logout</a>
+    {% else %}
+      <a href="{{ url_for('main.render_template_name', template='register.html') }}">Register</a>
+      <a href="{{ url_for('main.render_template_name', template='login.html') }}">Login</a>
+    {% endif %}
+  </nav>
+</header>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<script>
+  const logoutLink = document.getElementById("logout-link");
+  if (logoutLink) {
+    logoutLink.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const res = await fetch("/api/logout", { method: "POST" });
+      if (res.ok) window.location.href = "{{ url_for('main.index') }}";
+    });
+  }
+</script>
+
+</body>
+</html>

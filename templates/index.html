@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>In-flight Luggage Space – Available Listings</h2>
+
+{% if listings %}
+  <table class="listing-table">
+    <tr>
+      <th>Flight</th>
+      <th>Origin</th>
+      <th>Destination</th>
+      <th>Cargo (kg)</th>
+      <th>Price</th>
+      <th></th>
+    </tr>
+    {% for l in listings %}
+    <tr>
+      <td>{{ l.flight_number }} – {{ l.flight_date }}</td>
+      <td>{{ l.origin_city }}, {{ l.origin_country }} {{ l.origin_postcode }}</td>
+      <td>{{ l.destination_city }}, {{ l.destination_country }} {{ l.destination_postcode }}</td>
+      <td>{{ l.cargo_weight_kg }}</td>
+      <td>{{ l.currency_code }} {{ "%.2f"|format(l.price_amount) }}</td>
+      <td><a href="{{ url_for('category1.detail', listing_uid=l.listing_uid) }}">View</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <p>No listings available yet.</p>
+{% endif %}
+{% endblock %}

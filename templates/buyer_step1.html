@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Buyer – Provide Sender & Receiver Details</h2>
+
+<p>Please fill in the sender/receiver details and upload at least one identity document.</p>
+<p><strong>Note:</strong> Thank you for choosing Maa Express. Your identity documents are securely stored in our database and are accessible only to authorized administrators for verification purposes.</p>
+
+<form id="buyer-form">
+  <h3>Sender</h3>
+  <label>Sender Name
+    <input type="text" name="sender_name" required>
+  </label><br>
+  <label>Sender Address
+    <textarea name="sender_address" required></textarea>
+  </label><br>
+  <label>Sender Country Code
+    <input type="text" name="sender_phone_country_code" placeholder="+61" required>
+  </label><br>
+  <label>Sender Phone Number
+    <input type="text" name="sender_phone_number" required>
+  </label><br>
+  <label>Sender Email
+    <input type="email" name="sender_email" required>
+  </label><br>
+
+  <h3>Receiver</h3>
+  <label>Receiver Name
+    <input type="text" name="receiver_name" required>
+  </label><br>
+  <label>Receiver Address
+    <textarea name="receiver_address" required></textarea>
+  </label><br>
+  <label>Receiver Country Code
+    <input type="text" name="receiver_phone_country_code" placeholder="+880" required>
+  </label><br>
+  <label>Receiver Phone Number
+    <input type="text" name="receiver_phone_number" required>
+  </label><br>
+  <label>Receiver Email
+    <input type="email" name="receiver_email" required>
+  </label><br>
+
+  <h3>Delivery</h3>
+  <p>Delivery Country: <strong>{{ listing.destination_country }}</strong></p>
+  <label>Delivery Address Details
+    <textarea name="delivery_address_box" required></textarea>
+  </label><br>
+
+  <h3>Identity Document</h3>
+  <label>Document Type
+    <select name="identity_doc_type" required>
+      <option value="">--Select--</option>
+      <option value="passport">Passport</option>
+      <option value="driving_license">Driving License</option>
+      <option value="nid">National ID Card</option>
+      <option value="birth_certificate">Birth Certificate</option>
+      <option value="health_card">Health Card</option>
+      <option value="student_id">Student ID Card</option>
+    </select>
+  </label><br>
+
+  <label>Upload Document
+    <input type="file" id="identity-file" accept="image/*,application/pdf" required>
+  </label><br>
+
+  <button type="submit">Submit</button>
+</form>
+
+<p id="buyer-msg"></p>
+
+<script type="module">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+  };
+
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+
+  const form = document.getElementById("buyer-form");
+  const msgEl = document.getElementById("buyer-msg");
+
+  async function uploadFile(file, path) {
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msgEl.textContent = "Uploading identity document...";
+
+    const identityFile = document.getElementById("identity-file").files[0];
+    if (!identityFile) {
+      msgEl.textContent = "Please select an identity document.";
+      return;
+    }
+
+    const listingUid = "{{ listing.listing_uid }}";
+    try {
+      const identityUrl = await uploadFile(identityFile, `category1/${listingUid}/buyer_identity_${identityFile.name}`);
+
+      const formData = new FormData(form);
+
+      const payload = {
+        sender_name: formData.get("sender_name"),
+        sender_address: formData.get("sender_address"),
+        sender_phone_country_code: formData.get("sender_phone_country_code"),
+        sender_phone_number: formData.get("sender_phone_number"),
+        sender_email: formData.get("sender_email"),
+        receiver_name: formData.get("receiver_name"),
+        receiver_address: formData.get("receiver_address"),
+        receiver_phone_country_code: formData.get("receiver_phone_country_code"),
+        receiver_phone_number: formData.get("receiver_phone_number"),
+        receiver_email: formData.get("receiver_email"),
+        delivery_address_box: formData.get("delivery_address_box"),
+        identity_doc_type: formData.get("identity_doc_type"),
+        identity_doc_url: identityUrl
+      };
+
+      const res = await fetch("{{ url_for('category1.buyer_step1', listing_uid=listing.listing_uid) }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        msgEl.textContent = "Error: " + (data.error || "Failed to save buyer info");
+        return;
+      }
+      msgEl.textContent = data.message;
+      window.location.href = data.next_url;
+
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Upload failed: " + err.message;
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Step 3 – Phone Verification for Listing</h2>
+
+<p>Please verify your phone number to submit this listing for admin review.</p>
+<p>We will send an OTP SMS to your origin phone number: <strong>{{ listing.origin_phone_country_code }} {{ listing.origin_phone_number }}</strong></p>
+
+<div id="recaptcha-container"></div>
+
+<button id="send-otp">Send OTP</button>
+<input type="text" id="otp-code" placeholder="Enter OTP">
+<button id="verify-otp">Verify & Submit Listing</button>
+
+<p id="msg"></p>
+
+<script type="module">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "{{ config.FIREBASE_API_KEY }}",
+    authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+    projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+    appId: "{{ config.FIREBASE_APP_ID }}",
+    messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
+    measurementId: "{{ config.FIREBASE_MEASUREMENT_ID }}"
+  };
+
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const recaptchaVerifier = new RecaptchaVerifier(
+    'recaptcha-container',
+    { size: 'invisible' },
+    auth
+  );
+
+  const sendBtn = document.getElementById("send-otp");
+  const verifyBtn = document.getElementById("verify-otp");
+  const otpInput = document.getElementById("otp-code");
+  const msgEl = document.getElementById("msg");
+
+  let confirmationResultGlobal = null;
+
+  sendBtn.addEventListener("click", async () => {
+    msgEl.textContent = "";
+    const fullPhone = "{{ listing.origin_phone_country_code }}{{ listing.origin_phone_number }}";
+    try {
+      confirmationResultGlobal = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifier);
+      msgEl.textContent = "OTP sent to " + fullPhone;
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Error sending OTP: " + err.message;
+    }
+  });
+
+  verifyBtn.addEventListener("click", async () => {
+    if (!confirmationResultGlobal) {
+      msgEl.textContent = "Please send OTP first.";
+      return;
+    }
+    const code = otpInput.value.trim();
+    if (!code) {
+      msgEl.textContent = "Enter OTP.";
+      return;
+    }
+    try {
+      await confirmationResultGlobal.confirm(code);
+      const res = await fetch("{{ url_for('category1.verify_phone', listing_uid=listing.listing_uid) }}", {
+        method: "POST"
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        msgEl.textContent = "Error: " + (data.error || "Failed to update listing");
+        return;
+      }
+      msgEl.textContent = data.message;
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "OTP verification failed: " + err.message;
+    }
+  });
+</script>
+{% endblock %}

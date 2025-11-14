@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Step 2 – Upload Documents (Verification only)</h2>
+<p><strong>Note:</strong> These documents are for verification only and only visible to Maa Express Admin.</p>
+
+<form id="docs-form">
+  <label>Upload Plane Ticket (max 5 MB)
+    <input type="file" id="ticket-file" accept="image/*,application/pdf">
+  </label><br>
+
+  <label>Passport Front Page (max 10 MB)
+    <input type="file" id="passport-front-file" accept="image/*,application/pdf">
+  </label><br>
+
+  <label>Passport Back Page (max 10 MB)
+    <input type="file" id="passport-back-file" accept="image/*,application/pdf">
+  </label><br>
+
+  <button type="submit">Next: Phone verification</button>
+</form>
+
+<p id="docs-message"></p>
+
+<script type="module">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+  };
+
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+
+  const form = document.getElementById("docs-form");
+  const msgEl = document.getElementById("docs-message");
+
+  async function uploadFile(file, path) {
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msgEl.textContent = "Uploading documents...";
+
+    const ticketFile = document.getElementById("ticket-file").files[0];
+    const passportFrontFile = document.getElementById("passport-front-file").files[0];
+    const passportBackFile = document.getElementById("passport-back-file").files[0];
+
+    const urls = { ticket_copy_url: null, passport_front_url: null, passport_back_url: null };
+
+    try {
+      const listingUid = "{{ listing.listing_uid }}";
+
+      if (ticketFile) {
+        urls.ticket_copy_url = await uploadFile(ticketFile, `category1/${listingUid}/ticket_${ticketFile.name}`);
+      }
+      if (passportFrontFile) {
+        urls.passport_front_url = await uploadFile(passportFrontFile, `category1/${listingUid}/passport_front_${passportFrontFile.name}`);
+      }
+      if (passportBackFile) {
+        urls.passport_back_url = await uploadFile(passportBackFile, `category1/${listingUid}/passport_back_${passportBackFile.name}`);
+      }
+
+      const res = await fetch("{{ url_for('category1.upload_docs', listing_uid=listing.listing_uid) }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(urls)
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        msgEl.textContent = "Error: " + (data.error || "Failed to save document info");
+        return;
+      }
+      msgEl.textContent = data.message;
+      window.location.href = "{{ url_for('category1.verify_phone', listing_uid=listing.listing_uid) }}";
+
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "Upload failed: " + err.message;
+    }
+  });
+</script>
+{% endblock %}

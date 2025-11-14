@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create In-flight Luggage Space Listing – Step 1</h2>
+
+<form method="POST" action="{{ url_for('category1.new_listing') }}">
+  <h3>Service Type</h3>
+  <select name="service_type" required>
+    <option value="">-- Select --</option>
+    <option value="pickup_origin_delivery_destination">Included pick up at Origin and delivery at Destination.</option>
+    <option value="pickup_origin_only">Only Pick-up at Origin but receiver needs to collect.</option>
+    <option value="delivery_destination_only">Included destination Delivery but sender to drop off.</option>
+    <option value="dropoff_collect">Sender to Drop off and Receiver to collect.</option>
+  </select><br>
+
+  <label>Pick Up and Delivery Note (letters only, max 100 words)
+    <textarea name="pickup_delivery_note" maxlength="800"></textarea>
+  </label><br>
+
+  <h3>Flight Details</h3>
+  <label>Flight Date
+    <input type="date" name="flight_date" required>
+  </label><br>
+  <label>Flight Number
+    <input type="text" name="flight_number" required>
+  </label><br>
+  <label>Airline Name
+    <input type="text" name="airline_name" required>
+  </label><br>
+
+  <h3>Origin</h3>
+  <label>Origin Country Name
+    <input type="text" name="origin_country" required>
+  </label><br>
+  <label>Origin Airport Name
+    <input type="text" name="origin_airport" required>
+  </label><br>
+  <label>Origin City Name
+    <input type="text" name="origin_city" required>
+  </label><br>
+  <label>Origin Post Code
+    <input type="text" name="origin_postcode" required>
+  </label><br>
+  <label>Origin Contact Name
+    <input type="text" name="origin_contact_name" required>
+  </label><br>
+  <label>Origin Country Phone Code
+    <input type="text" name="origin_phone_country_code" placeholder="+61" required>
+  </label><br>
+  <label>Origin Contact Number
+    <input type="text" name="origin_phone_number" required>
+  </label><br>
+
+  <h3>Destination</h3>
+  <label>Destination Country
+    <input type="text" name="destination_country" required>
+  </label><br>
+  <label>Destination Airport Name
+    <input type="text" name="destination_airport" required>
+  </label><br>
+  <label>Destination City
+    <input type="text" name="destination_city" required>
+  </label><br>
+  <label>Destination Post Code
+    <input type="text" name="destination_postcode" required>
+  </label><br>
+  <label>Destination Contact Name
+    <input type="text" name="destination_contact_name" required>
+  </label><br>
+  <label>Destination Country Phone Code
+    <input type="text" name="destination_phone_country_code" placeholder="+880" required>
+  </label><br>
+  <label>Destination Contact Number
+    <input type="text" name="destination_phone_number" required>
+  </label><br>
+
+  <h3>Contact & Price</h3>
+  <label>Email
+    <input type="email" name="contact_email" required>
+  </label><br>
+
+  <label>Cargo Weight (kg)
+    <input type="number" name="cargo_weight_kg" step="0.1" required>
+  </label><br>
+
+  <label>Currency
+    <select name="currency_code" required id="currency-select"></select>
+  </label><br>
+
+  <label>Price
+    <input type="number" name="price_amount" step="0.01" required>
+  </label><br>
+
+  <label>Description
+    <textarea name="description" placeholder="write any special requirements"></textarea>
+  </label><br>
+
+  <button type="submit">Next: Upload documents</button>
+</form>
+
+<script>
+const currencies = [{"code":"AUD"}, {"code":"USD"}, {"code":"EUR"}];
+const select = document.getElementById("currency-select");
+currencies.forEach(c => {
+  const opt = document.createElement("option");
+  opt.value = c.code;
+  opt.textContent = c.code;
+  select.appendChild(opt);
+});
+</script>
+{% endblock %}
