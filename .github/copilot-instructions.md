@@ -25,14 +25,14 @@ Database & migrations
 Key runtime patterns and conventions
 - Session-based login: blueprints set `session["user_id"]` after login. Lookup current user via `User.query.get(session["user_id"])` (see `blueprints/main.py` and `auth.py`).
 - Authorization: each blueprint defines local decorators (e.g., `login_required` in `auth.py` and `category1.py`, `admin_required` in `admin.py`). Use those decorators rather than rolling a different mechanism.
-- Listing lifecycle (Category1): status values observed in code — `pending_documents`, `pending_phone_verification`, `pending_admin_review`, `approved`, `rejected`, `sold`. Follow these exact strings when updating status.
+- **Admin approval system**: All listing models (`Category1Listing`, `Category2Listing`, `Category3Product`) use `admin_status` field with values: `pending`, `approved`, `rejected`. Always filter by `admin_status="approved"` for public views.
 - File URLs: uploaded documents are stored as URLs on model fields (e.g., `ticket_copy_url`, `passport_front_url`). The server expects the frontend to upload files (likely to Firebase Storage) and send back URLs.
 
 Examples of important routes (useful when writing tests or modifying flows)
 - Public index: `GET /` → `main.index()` renders `templates/index.html`.
 - Register/login endpoints (client posts idToken): `POST /api/register`, `POST /api/login` (see `blueprints/auth.py`). These verify Firebase ID tokens server-side.
 - Category1 create flow: `GET/POST /category1/new` → `POST` creates `Category1Listing` and redirects to `/category1/<listing_uid>/upload-docs`.
-- Admin status update: `POST /admin/category1/<listing_uid>/update-status` — allowed values: `approved`, `rejected`.
+- Admin status update: `POST /admin/category1/<listing_id>/update-status` — allowed values: `approved`, `rejected`, `pending`. Updates `admin_status` field.
 
 Testing, build, and debug tips
 - To run locally: ensure `.env` contains DB and Firebase paths, then run `python app.py`.

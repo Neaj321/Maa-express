@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+<div class="admin-header">
+  <h2>Users Management</h2>
+  <nav class="admin-tabs">
+    <a href="{{ url_for('admin.dashboard') }}">Overview</a>
+    <a href="{{ url_for('admin.category1_listings') }}">Category 1</a>
+    <a href="{{ url_for('admin.category2_listings') }}">Category 2</a>
+    <a href="{{ url_for('admin.category3_products') }}">Category 3</a>
+    <a href="{{ url_for('admin.users') }}" class="active">Users</a>
+    <a href="{{ url_for('admin.analytics') }}">Analytics</a>
+    <a href="{{ url_for('admin.settings') }}">Settings</a>
+  </nav>
+</div>
+
+<div class="panel">
+  <p>Login counts shown for last {{ login_days }} days.</p>
+  <table class="listing">
+    <tr>
+      <th>Email</th>
+      <th>Name</th>
+      <th>Created</th>
+      <th>Active</th>
+      <th>Admin</th>
+      <th>Logins</th>
+    </tr>
+    {% for u, login_count in user_stats %}
+    <tr>
+      <td>{{ u.email }}</td>
+      <td>{{ u.full_name or 'N/A' }}</td>
+      <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+      <td>{{ 'Yes' if u.is_active else 'No' }}</td>
+      <td>{{ 'Yes' if u.is_admin else 'No' }}</td>
+      <td>{{ login_count }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

@@ -1,53 +1,725 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Create Account</h2>
+<div class="auth-page-wrapper">
+  <!-- Hero Section -->
+  <div class="auth-hero-section">
+    <div class="auth-hero-content">
+      <h1>Join Maa Express</h1>
+      <p class="auth-hero-sub">Secure in-flight luggage transfers & verified carriers worldwide</p>
+      <ul class="auth-benefits">
+        <li>✓ Verified carriers & buyers</li>
+        <li>✓ Secure handover codes</li>
+        <li>✓ Transparent pricing</li>
+        <li>✓ Global coverage</li>
+      </ul>
+    </div>
+  </div>
 
-<form id="register-form">
-  <label>First Name
-    <input type="text" name="first_name" required>
-  </label><br>
+  <!-- Registration Form -->
+  <div class="auth-card-wrapper">
+    <div class="auth-card" role="main" aria-labelledby="register-title">
+      <h2 id="register-title">Create Your Account</h2>
 
-  <label>Last Name
-    <input type="text" name="last_name" required>
-  </label><br>
+      <form id="register-form" class="auth-form" autocomplete="on" novalidate>
+        <!-- Full Name -->
+        <label class="form-label">
+          <span class="label-text">Full Name</span>
+          <input 
+            class="form-input" 
+            type="text" 
+            id="full-name" 
+            name="full_name" 
+            placeholder="John Doe"
+            autocomplete="name"
+            required 
+          />
+          <span class="field-error" id="name-error"></span>
+        </label>
 
-  <label>Email
-    <input type="email" name="email" required>
-  </label><br>
+        <!-- Email -->
+        <label class="form-label">
+          <span class="label-text">Email</span>
+          <input 
+            class="form-input" 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="[email protected]"
+            autocomplete="email"
+            required 
+          />
+          <span class="field-error" id="email-error"></span>
+        </label>
 
-  <label>Phone Country Code
-    <input type="text" name="phone_country_code" placeholder="+61" required>
-  </label><br>
+        <!-- Country Code -->
+        <label class="form-label">
+          <span class="label-text">Country Code</span>
+          <select id="phone-country-code" class="form-input" required>
+            <option value="+61">🇦🇺 +61 (Australia)</option>
+            <option value="+1">🇺🇸 +1 (USA)</option>
+            <option value="+44">🇬🇧 +44 (UK)</option>
+            <option value="+880">🇧🇩 +880 (Bangladesh)</option>
+            <option value="+91">🇮🇳 +91 (India)</option>
+            <option value="+86">🇨🇳 +86 (China)</option>
+            <option value="+81">🇯🇵 +81 (Japan)</option>
+            <option value="+65">🇸🇬 +65 (Singapore)</option>
+            <option value="+60">🇲🇾 +60 (Malaysia)</option>
+            <option value="+62">🇮🇩 +62 (Indonesia)</option>
+            <option value="+66">🇹🇭 +66 (Thailand)</option>
+            <option value="+84">🇻🇳 +84 (Vietnam)</option>
+            <option value="+63">🇵🇭 +63 (Philippines)</option>
+            <option value="+94">🇱🇰 +94 (Sri Lanka)</option>
+            <option value="+977">🇳🇵 +977 (Nepal)</option>
+            <option value="+92">🇵🇰 +92 (Pakistan)</option>
+            <option value="+64">🇳🇿 +64 (New Zealand)</option>
+            <option value="+49">🇩🇪 +49 (Germany)</option>
+            <option value="+33">🇫🇷 +33 (France)</option>
+            <option value="+39">🇮🇹 +39 (Italy)</option>
+            <option value="+34">🇪🇸 +34 (Spain)</option>
+            <option value="+971">🇦🇪 +971 (UAE)</option>
+            <option value="+966">🇸🇦 +966 (Saudi Arabia)</option>
+            <option value="+27">🇿🇦 +27 (South Africa)</option>
+          </select>
+        </label>
 
-  <label>Phone Number
-    <input type="text" name="phone_number" required>
-  </label><br>
+        <!-- Phone Number -->
+        <label class="form-label">
+          <span class="label-text">Phone (without country code)</span>
+          <input 
+            class="form-input" 
+            type="tel" 
+            id="phone-number" 
+            name="phone" 
+            placeholder="412345678"
+            autocomplete="tel-national"
+            pattern="[0-9]+"
+            required 
+          />
+          <span class="input-hint">Enter only digits, no spaces or dashes</span>
+          <span class="field-error" id="phone-error"></span>
+        </label>
 
-  <label>Password
-    <input type="password" name="password" required minlength="6">
-  </label><br>
+        <!-- Password -->
+        <label class="form-label">
+          <span class="label-text">Password</span>
+          <div class="password-input-wrapper">
+            <input 
+              class="form-input password-input" 
+              type="password" 
+              id="password" 
+              name="password" 
+              placeholder="Min. 6 characters"
+              autocomplete="new-password"
+              required 
+              minlength="6" 
+            />
+            <button type="button" class="toggle-password" id="toggle-password" aria-label="Show password">
+              <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+              </svg>
+            </button>
+          </div>
+          <span class="input-hint">Must be at least 6 characters</span>
+          <span class="field-error" id="password-error"></span>
+          
+          <!-- Password strength indicator -->
+          <div class="password-strength" id="password-strength" style="display: none;">
+            <div class="strength-bar">
+              <div class="strength-fill" id="strength-fill"></div>
+            </div>
+            <span class="strength-text" id="strength-text"></span>
+          </div>
+        </label>
 
-  <button type="button" id="send-otp-btn">Send OTP</button>
-  <div id="recaptcha-container"></div>
+        <!-- Confirm Password -->
+        <label class="form-label">
+          <span class="label-text">Confirm Password</span>
+          <div class="password-input-wrapper">
+            <input 
+              class="form-input password-input" 
+              type="password" 
+              id="confirm-password" 
+              name="confirm_password" 
+              placeholder="Re-enter your password"
+              autocomplete="new-password"
+              required 
+              minlength="6" 
+            />
+            <button type="button" class="toggle-password" id="toggle-confirm-password" aria-label="Show password">
+              <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+              </svg>
+            </button>
+          </div>
+          <span class="input-hint">Both passwords must match</span>
+          <span class="field-error" id="confirm-password-error"></span>
+          
+          <!-- Password match indicator -->
+          <div class="password-match" id="password-match" style="display: none;">
+            <span class="match-icon">✓</span>
+            <span class="match-text">Passwords match</span>
+          </div>
+        </label>
 
-  <label>Enter OTP
-    <input type="text" id="otp-code" placeholder="SMS code">
-  </label><br>
+        <!-- Verification Method Selection -->
+        <div class="verification-method-section">
+          <label class="label-text">Choose Verification Method</label>
+          <div class="method-toggle">
+            <label class="method-option">
+              <input type="radio" name="verification_method" value="email" checked />
+              <span class="method-label">📧 Email Link</span>
+            </label>
+            <label class="method-option">
+              <input type="radio" name="verification_method" value="sms" />
+              <span class="method-label">📱 SMS OTP</span>
+            </label>
+          </div>
+        </div>
 
-  <button type="submit">Sign up</button>
-</form>
+        <!-- Email Verification Section -->
+        <div id="email-verification" class="verification-section" style="display: block;">
+          <button type="button" id="send-email-link" class="btn-secondary">Send Verification Link</button>
 
-<p id="register-message"></p>
+          <div id="email-verify-section" style="display: none; margin-top: 12px;">
+            <p class="verify-note">✓ Check your email for the verification link and click it.</p>
+            <button type="button" id="email-link-confirmed" class="btn-secondary">I've Verified My Email</button>
+          </div>
+        </div>
+
+        <!-- SMS Verification Section -->
+        <div id="sms-verification" class="verification-section" style="display: none;">
+          <div id="recaptcha-container"></div>
+          <button type="button" id="send-sms-otp" class="btn-secondary">Send OTP to Phone</button>
+
+          <div id="sms-verify-section" style="display: none; margin-top: 12px;">
+            <label class="form-label">
+              <span class="label-text">Enter OTP</span>
+              <input 
+                class="form-input" 
+                type="text" 
+                id="sms-otp-code" 
+                placeholder="Enter 6-digit code" 
+                maxlength="6"
+                pattern="[0-9]{6}"
+              />
+            </label>
+            <button type="button" id="verify-sms-otp" class="btn-secondary">Verify OTP</button>
+          </div>
+        </div>
+
+        <!-- Terms Agreement -->
+        <label class="checkbox-label">
+          <input type="checkbox" id="terms-agree" required />
+          <span>I agree to the <a href="/terms" target="_blank">Terms of Service</a> and <a href="/privacy" target="_blank">Privacy Policy</a></span>
+        </label>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-btn" class="btn-primary" disabled>Create Account</button>
+
+        <p id="register-message" class="form-message" aria-live="polite"></p>
+
+        <div class="auth-footer">
+          <p>Already have an account? <a href="{{ url_for('auth.login_page') }}" class="auth-link">Sign in</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ============================================
+   AUTH PAGE LAYOUT
+   ============================================ */
+.auth-page-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: #f3f6fb;
+}
+
+.auth-hero-section {
+  flex: 1;
+  background: linear-gradient(180deg, rgba(11,99,209,0.08), rgba(15,137,255,0.03));
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(11,99,209,0.08);
+}
+
+.auth-hero-content {
+  max-width: 380px;
+  text-align: center;
+}
+
+.auth-hero-content h1 {
+  margin: 0 0 12px;
+  font-size: 2rem;
+  color: #0b3f80;
+  font-weight: 700;
+}
+
+.auth-hero-sub {
+  margin: 0 0 24px;
+  color: #375a8f;
+  opacity: 0.9;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.auth-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.auth-benefits li {
+  padding: 8px 0;
+  color: #0b3f80;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+}
+
+.auth-benefits li::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.auth-card-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 10px 30px rgba(10,30,60,0.08);
+  border: 1px solid rgba(15,40,80,0.03);
+  width: 100%;
+  max-width: 460px;
+}
+
+.auth-card h2 {
+  margin: 0 0 24px;
+  font-size: 1.5rem;
+  color: #0b3f80;
+  font-weight: 700;
+}
+
+/* ============================================
+   FORM STYLES
+   ============================================ */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-label {
+  display: block;
+}
+
+.label-text {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #274b77;
+  font-size: 0.9rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 6px;
+  border: 1px solid #dbe7fb;
+  background: #fbfdff;
+  box-sizing: border-box;
+  font-size: 1rem;
+  color: #0b2340;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(11,99,209,0.08);
+  border-color: #0b63d1;
+}
+
+.form-input.error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.form-input.success {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.input-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #ef4444;
+  font-weight: 600;
+  min-height: 18px;
+}
+
+/* ============================================
+   PASSWORD INPUT WITH TOGGLE
+   ============================================ */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  padding-right: 45px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.toggle-password:hover {
+  color: #0b63d1;
+}
+
+.eye-icon {
+  pointer-events: none;
+}
+
+/* ============================================
+   PASSWORD STRENGTH INDICATOR
+   ============================================ */
+.password-strength {
+  margin-top: 8px;
+}
+
+.strength-bar {
+  width: 100%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.strength-fill {
+  height: 100%;
+  transition: width 0.3s, background-color 0.3s;
+  width: 0%;
+  background: #9ca3af;
+}
+
+.strength-fill.weak {
+  width: 33%;
+  background: #ef4444;
+}
+
+.strength-fill.medium {
+  width: 66%;
+  background: #f59e0b;
+}
+
+.strength-fill.strong {
+  width: 100%;
+  background: #10b981;
+}
+
+.strength-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.strength-text.weak {
+  color: #ef4444;
+}
+
+.strength-text.medium {
+  color: #f59e0b;
+}
+
+.strength-text.strong {
+  color: #10b981;
+}
+
+/* ============================================
+   PASSWORD MATCH INDICATOR
+   ============================================ */
+.password-match {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.match-icon {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.match-text {
+  color: #065f46;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ============================================
+   CHECKBOX & BUTTONS
+   ============================================ */
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.checkbox-label a {
+  color: #0b63d1;
+  text-decoration: none;
+}
+
+.checkbox-label a:hover {
+  text-decoration: underline;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #0b63d1, #0f89ff);
+  color: #fff;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.96;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11,99,209,0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: #f0f4f9;
+  color: #0b63d1;
+  border: 1px solid rgba(11,99,209,0.2);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #e8eef7;
+}
+
+/* ============================================
+   VERIFICATION METHOD
+   ============================================ */
+.verification-method-section {
+  margin-top: 8px;
+}
+
+.method-toggle {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.method-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #dbe7fb;
+  background: #fbfdff;
+  cursor: pointer;
+  flex: 1;
+  transition: all 0.2s;
+}
+
+.method-option:hover {
+  background: #f0f7ff;
+  border-color: #0b63d1;
+}
+
+.method-option input[type="radio"] {
+  cursor: pointer;
+  margin: 0;
+}
+
+.method-option input[type="radio"]:checked ~ .method-label {
+  color: #0b63d1;
+  font-weight: 700;
+}
+
+.method-label {
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #274b77;
+}
+
+.verification-section {
+  margin-top: 12px;
+  padding: 14px;
+  background: #fbfdff;
+  border-radius: 6px;
+  border: 1px solid #dbe7fb;
+}
+
+.verify-note {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* ============================================
+   MESSAGE & FOOTER
+   ============================================ */
+.form-message {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.form-message.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.form-message.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.auth-footer {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.auth-link {
+  color: #0b63d1;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .auth-page-wrapper {
+    flex-direction: column;
+  }
+  
+  .auth-hero-section {
+    border-right: none;
+    border-bottom: 1px solid rgba(11,99,209,0.08);
+    padding: 30px;
+    min-height: auto;
+  }
+  
+  .auth-card-wrapper {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .auth-hero-section {
+    padding: 20px;
+  }
+  
+  .auth-card {
+    padding: 24px;
+  }
+  
+  .auth-hero-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .method-toggle {
+    flex-direction: column;
+  }
+}
+</style>
 
 <script type="module">
   import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    linkWithPhoneNumber,
-    RecaptchaVerifier
+  import { 
+    getAuth, 
+    RecaptchaVerifier, 
+    signInWithPhoneNumber,
+    sendSignInLinkToEmail
   } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
+  // Firebase Configuration
   const firebaseConfig = {
     apiKey: "{{ config.FIREBASE_API_KEY }}",
     authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
@@ -61,105 +733,404 @@
   const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
+  // DOM Elements
   const form = document.getElementById("register-form");
   const msgEl = document.getElementById("register-message");
-  const sendOtpBtn = document.getElementById("send-otp-btn");
-  const otpInput = document.getElementById("otp-code");
+  const submitBtn = document.getElementById("submit-btn");
 
-  let confirmationResultGlobal = null;
+  const fullNameInput = document.getElementById("full-name");
+  const emailInput = document.getElementById("email");
+  const phoneInput = document.getElementById("phone-number");
+  const passwordInput = document.getElementById("password");
+  const confirmPasswordInput = document.getElementById("confirm-password");
+  const phoneCountryCode = document.getElementById("phone-country-code");
+  const termsCheckbox = document.getElementById("terms-agree");
 
-  const recaptchaVerifier = new RecaptchaVerifier(
-    'recaptcha-container',
-    { size: 'invisible' },
-    auth
-  );
+  // Error elements
+  const nameError = document.getElementById("name-error");
+  const emailError = document.getElementById("email-error");
+  const phoneError = document.getElementById("phone-error");
+  const passwordError = document.getElementById("password-error");
+  const confirmPasswordError = document.getElementById("confirm-password-error");
 
-  sendOtpBtn.addEventListener("click", async () => {
-    msgEl.textContent = "";
-    const formData = new FormData(form);
-    const phone_country_code = formData.get("phone_country_code");
-    const phone_number = formData.get("phone_number");
-    const fullPhone = phone_country_code + phone_number;
-    const email = formData.get("email");
-    const password = formData.get("password");
+  // Password visibility toggles
+  const togglePassword = document.getElementById("toggle-password");
+  const toggleConfirmPassword = document.getElementById("toggle-confirm-password");
 
-    if (!email || !password) {
-      msgEl.textContent = "Please enter email and password first.";
+  // Password strength elements
+  const passwordStrengthEl = document.getElementById("password-strength");
+  const strengthFill = document.getElementById("strength-fill");
+  const strengthText = document.getElementById("strength-text");
+
+  // Password match indicator
+  const passwordMatchEl = document.getElementById("password-match");
+
+  const verificationRadios = document.querySelectorAll("input[name='verification_method']");
+  const emailSection = document.getElementById("email-verification");
+  const smsSection = document.getElementById("sms-verification");
+
+  const sendEmailLinkBtn = document.getElementById("send-email-link");
+  const emailVerifySection = document.getElementById("email-verify-section");
+  const emailLinkConfirmedBtn = document.getElementById("email-link-confirmed");
+
+  const sendSmsOtpBtn = document.getElementById("send-sms-otp");
+  const smsVerifySection = document.getElementById("sms-verify-section");
+  const verifySmsOtpBtn = document.getElementById("verify-sms-otp");
+  const smsOtpInput = document.getElementById("sms-otp-code");
+
+  let recaptchaVerifier = null;
+  let verificationComplete = false;
+  let confirmationResult = null;
+  let passwordsMatch = false;
+
+  // ============================================
+  // HELPER FUNCTIONS
+  // ============================================
+  function showMessage(text, type) {
+    msgEl.textContent = text;
+    msgEl.className = `form-message ${type}`;
+  }
+
+  function setFieldError(element, errorElement, message) {
+    element.classList.add('error');
+    element.classList.remove('success');
+    errorElement.textContent = message;
+  }
+
+  function clearFieldError(element, errorElement) {
+    element.classList.remove('error');
+    element.classList.add('success');
+    errorElement.textContent = '';
+  }
+
+  function updateSubmitBtn() {
+    const allFieldsValid = 
+      fullNameInput.value.trim().length >= 2 &&
+      emailInput.value.includes('@') &&
+      phoneInput.value.length >= 6 &&
+      passwordInput.value.length >= 6 &&
+      passwordsMatch &&
+      verificationComplete &&
+      termsCheckbox.checked;
+    
+    submitBtn.disabled = !allFieldsValid;
+  }
+
+  // ============================================
+  // PASSWORD STRENGTH CHECKER
+  // ============================================
+  function checkPasswordStrength(password) {
+    if (!password) {
+      passwordStrengthEl.style.display = 'none';
+      return 'none';
+    }
+
+    passwordStrengthEl.style.display = 'block';
+
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (password.length >= 10) strength++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    strengthFill.className = 'strength-fill';
+    strengthText.className = 'strength-text';
+
+    if (strength <= 2) {
+      strengthFill.classList.add('weak');
+      strengthText.classList.add('weak');
+      strengthText.textContent = 'Weak password';
+      return 'weak';
+    } else if (strength <= 3) {
+      strengthFill.classList.add('medium');
+      strengthText.classList.add('medium');
+      strengthText.textContent = 'Medium strength';
+      return 'medium';
+    } else {
+      strengthFill.classList.add('strong');
+      strengthText.classList.add('strong');
+      strengthText.textContent = 'Strong password';
+      return 'strong';
+    }
+  }
+
+  // ============================================
+  // PASSWORD MATCH CHECKER
+  // ============================================
+  function checkPasswordMatch() {
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+
+    if (!confirmPassword) {
+      passwordMatchEl.style.display = 'none';
+      confirmPasswordInput.classList.remove('error', 'success');
+      confirmPasswordError.textContent = '';
+      passwordsMatch = false;
+      updateSubmitBtn();
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setFieldError(confirmPasswordInput, confirmPasswordError, 'Passwords do not match');
+      passwordMatchEl.style.display = 'none';
+      passwordsMatch = false;
+    } else if (password.length >= 6) {
+      clearFieldError(confirmPasswordInput, confirmPasswordError);
+      passwordMatchEl.style.display = 'flex';
+      passwordsMatch = true;
+    }
+
+    updateSubmitBtn();
+  }
+
+  // ============================================
+  // REAL-TIME VALIDATION
+  // ============================================
+  fullNameInput.addEventListener('input', () => {
+    const value = fullNameInput.value.trim();
+    if (value.length < 2) {
+      setFieldError(fullNameInput, nameError, 'Name must be at least 2 characters');
+    } else {
+      clearFieldError(fullNameInput, nameError);
+    }
+    updateSubmitBtn();
+  });
+
+  emailInput.addEventListener('input', () => {
+    const value = emailInput.value.trim();
+    if (!value.includes('@') || !value.includes('.')) {
+      setFieldError(emailInput, emailError, 'Enter a valid email address');
+    } else {
+      clearFieldError(emailInput, emailError);
+    }
+    updateSubmitBtn();
+  });
+
+  phoneInput.addEventListener('input', () => {
+    const value = phoneInput.value.trim();
+    if (value.length < 6 || !/^\d+$/.test(value)) {
+      setFieldError(phoneInput, phoneError, 'Enter a valid phone number (digits only)');
+    } else {
+      clearFieldError(phoneInput, phoneError);
+    }
+    updateSubmitBtn();
+  });
+
+  passwordInput.addEventListener('input', () => {
+    const password = passwordInput.value;
+    checkPasswordStrength(password);
+
+    if (password.length < 6) {
+      setFieldError(passwordInput, passwordError, 'Password must be at least 6 characters');
+    } else {
+      clearFieldError(passwordInput, passwordError);
+    }
+
+    checkPasswordMatch();
+    updateSubmitBtn();
+  });
+
+  confirmPasswordInput.addEventListener('input', () => {
+    checkPasswordMatch();
+  });
+
+  // ============================================
+  // PASSWORD VISIBILITY TOGGLE
+  // ============================================
+  togglePassword.addEventListener('click', () => {
+    const type = passwordInput.type === 'password' ? 'text' : 'password';
+    passwordInput.type = type;
+  });
+
+  toggleConfirmPassword.addEventListener('click', () => {
+    const type = confirmPasswordInput.type === 'password' ? 'text' : 'password';
+    confirmPasswordInput.type = type;
+  });
+
+  // ============================================
+  // TERMS CHECKBOX & VERIFICATION TOGGLE
+  // ============================================
+  termsCheckbox.addEventListener("change", updateSubmitBtn);
+
+  verificationRadios.forEach(radio => {
+    radio.addEventListener("change", (e) => {
+      if (e.target.value === "email") {
+        emailSection.style.display = "block";
+        smsSection.style.display = "none";
+      } else {
+        emailSection.style.display = "none";
+        smsSection.style.display = "block";
+      }
+      verificationComplete = false;
+      updateSubmitBtn();
+    });
+  });
+
+  // ============================================
+  // EMAIL VERIFICATION FLOW
+  // ============================================
+  sendEmailLinkBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    if (!email || !email.includes("@")) {
+      showMessage("Please enter a valid email", "error");
+      return;
+    }
+
+    showMessage("Sending verification link...", "");
+
+    try {
+      const actionCodeSettings = {
+        url: `{{ config.APP_BASE_URL }}verify-email?email=${encodeURIComponent(email)}`,
+        handleCodeInApp: true
+      };
+
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      window.localStorage.setItem("emailForSignIn", email);
+      showMessage("✓ Verification link sent! Check your email.", "success");
+      emailVerifySection.style.display = "block";
+    } catch (err) {
+      console.error(err);
+      showMessage("Error: " + (err?.message || "Failed to send link"), "error");
+    }
+  });
+
+  emailLinkConfirmedBtn.addEventListener("click", () => {
+    verificationComplete = true;
+    showMessage("✓ Email verified! You can now create your account.", "success");
+    updateSubmitBtn();
+  });
+
+  // ============================================
+  // SMS VERIFICATION FLOW
+  // ============================================
+  sendSmsOtpBtn.addEventListener("click", async () => {
+    if (!recaptchaVerifier) {
+      recaptchaVerifier = new RecaptchaVerifier("recaptcha-container", { 
+        size: "invisible" 
+      }, auth);
+    }
+
+    const countryCode = phoneCountryCode.value;
+    const phoneNum = phoneInput.value.replace(/\s+/g, "");
+    const fullPhone = countryCode + phoneNum;
+
+    if (!phoneNum || phoneNum.length < 6) {
+      showMessage("Please enter a valid phone number", "error");
+      return;
+    }
+
+    showMessage("Sending OTP to " + fullPhone + "...", "");
+
+    try {
+      confirmationResult = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifier);
+      showMessage("✓ OTP sent! Check your phone.", "success");
+      smsVerifySection.style.display = "block";
+    } catch (err) {
+      console.error(err);
+      showMessage("Error: " + (err?.message || "Failed to send OTP"), "error");
+    }
+  });
+
+  verifySmsOtpBtn.addEventListener("click", async () => {
+    if (!confirmationResult) {
+      showMessage("Please send OTP first", "error");
+      return;
+    }
+
+    const code = smsOtpInput.value.trim();
+    if (!code || code.length !== 6) {
+      showMessage("Invalid OTP code", "error");
+      return;
+    }
+
+    showMessage("Verifying OTP...", "");
+
+    try {
+      await confirmationResult.confirm(code);
+      verificationComplete = true;
+      showMessage("✓ Phone verified! You can now create your account.", "success");
+      updateSubmitBtn();
+    } catch (err) {
+      console.error(err);
+      showMessage("OTP verification failed: " + (err?.message || "Invalid code"), "error");
+    }
+  });
+
+  // ============================================
+  // FORM SUBMISSION
+  // ============================================
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Final validation before submission
+    if (!passwordsMatch) {
+      showMessage("Passwords do not match", "error");
+      confirmPasswordInput.focus();
+      return;
+    }
+
+    if (!verificationComplete) {
+      showMessage("Please complete verification first", "error");
+      return;
+    }
+
+    if (!termsCheckbox.checked) {
+      showMessage("Please agree to Terms & Privacy Policy", "error");
+      return;
+    }
+
+    showMessage("Creating your account...", "");
+
+    const full_name = fullNameInput.value.trim();
+    const email = emailInput.value.trim().toLowerCase();
+    const phone = phoneCountryCode.value + phoneInput.value.replace(/\s+/g, "");
+    const password = passwordInput.value;
+
+    // Additional validation
+    if (!full_name || full_name.length < 2) {
+      showMessage("Please enter your full name", "error");
+      fullNameInput.focus();
+      return;
+    }
+
+    if (!email.includes("@") || !email.includes(".")) {
+      showMessage("Please enter a valid email", "error");
+      emailInput.focus();
+      return;
+    }
+
+    if (password.length < 6) {
+      showMessage("Password must be at least 6 characters", "error");
+      passwordInput.focus();
       return;
     }
 
     try {
-      let user = auth.currentUser;
-      if (!user) {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        user = userCredential.user;
-      }
-
-      confirmationResultGlobal = await linkWithPhoneNumber(user, fullPhone, recaptchaVerifier);
-      msgEl.textContent = "OTP sent to " + fullPhone + ". Please enter it and click Sign up.";
-    } catch (err) {
-      console.error(err);
-      msgEl.textContent = "Error sending OTP: " + err.message;
-    }
-  });
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    msgEl.textContent = "Verifying OTP...";
-
-    const formData = new FormData(form);
-    const first_name = formData.get("first_name");
-    const last_name = formData.get("last_name");
-    const email = formData.get("email");
-    const phone_country_code = formData.get("phone_country_code");
-    const phone_number = formData.get("phone_number");
-
-    try {
-      if (!confirmationResultGlobal) {
-        msgEl.textContent = "Please click 'Send OTP' first.";
-        return;
-      }
-
-      const code = otpInput.value.trim();
-      if (!code) {
-        msgEl.textContent = "Please enter OTP.";
-        return;
-      }
-
-      await confirmationResultGlobal.confirm(code);
-
-      const user = auth.currentUser;
-      if (!user) {
-        msgEl.textContent = "User not signed in after OTP.";
-        return;
-      }
-
-      const idToken = await user.getIdToken();
-
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          idToken,
-          first_name,
-          last_name,
-          phone_country_code,
-          phone_number,
-          phone_verified: true
+          full_name,
+          email,
+          phone,
+          password
         })
       });
 
       const data = await res.json();
+
       if (!res.ok) {
-        msgEl.textContent = "Error: " + (data.error || "Registration failed");
+        showMessage("Error: " + (data.error || "Registration failed"), "error");
         return;
       }
 
-      msgEl.textContent = "Registered & phone verified. Redirecting...";
-      window.location.href = "/";
+      showMessage("✓ Account created successfully! Redirecting...", "success");
+      setTimeout(() => window.location.href = "/", 1500);
+
     } catch (err) {
       console.error(err);
-      msgEl.textContent = "OTP verification failed: " + err.message;
+      showMessage("Error: " + err.message, "error");
     }
   });
 </script>

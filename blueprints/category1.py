@@ -1,268 +1,491 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash
 from functools import wraps
 from datetime import datetime
-import re
+from decimal import Decimal
 
-from models import db, User, Category1Listing, Category1BuyerInfo
+from models import db, Category1Listing, User, Category1BuyerInfo
+from utils.phone_utils import can_view_full_phone
 
 category1_bp = Blueprint("category1", __name__, url_prefix="/category1")
 
 
+# ============================================================================
+# AUTHENTICATION DECORATOR
+# ============================================================================
 def login_required(f):
+    """Require user to be logged in"""
     @wraps(f)
     def decorated(*args, **kwargs):
         if "user_id" not in session:
-            return redirect(url_for("main.render_template_name", template="login.html"))
+            flash("Please log in to continue", "error")
+            return redirect(url_for("auth.login_page"))
         return f(*args, **kwargs)
     return decorated
 
 
-def phone_verified_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if "user_id" not in session:
-            return redirect(url_for("main.render_template_name", template="login.html"))
-        user = User.query.get(session["user_id"])
-        if not user or not user.is_active or not user.is_phone_verified:
-            return "Phone verification required before creating listings.", 403
-        return f(*args, **kwargs)
-    return decorated
+# ============================================================================
+# PUBLIC ROUTES (NO AUTH REQUIRED)
+# ============================================================================
 
-
-@category1_bp.route("/new", methods=["GET", "POST"])
-@login_required
-@phone_verified_required
-def new_listing():
-    if request.method == "GET":
-        return render_template("category1_new_step1.html")
-
-    form = request.form
-    note = form.get("pickup_delivery_note", "").strip()
-    if re.search(r"[0-9@]", note):
-        return "Note cannot contain numbers or emails.", 400
-    if len(note.split()) > 100:
-        return "Note cannot exceed 100 words.", 400
-
-    flight_date = datetime.strptime(form.get("flight_date"), "%Y-%m-%d").date()
-
-    listing = Category1Listing(
-        seller_id=session["user_id"],
-        service_type=form.get("service_type"),
-        pickup_delivery_note=note,
-        flight_date=flight_date,
-        flight_number=form.get("flight_number"),
-        airline_name=form.get("airline_name"),
-        origin_country=form.get("origin_country"),
-        origin_airport=form.get("origin_airport"),
-        origin_city=form.get("origin_city"),
-        origin_postcode=form.get("origin_postcode"),
-        origin_contact_name=form.get("origin_contact_name"),
-        origin_phone_country_code=form.get("origin_phone_country_code"),
-        origin_phone_number=form.get("origin_phone_number"),
-        destination_country=form.get("destination_country"),
-        destination_airport=form.get("destination_airport"),
-        destination_city=form.get("destination_city"),
-        destination_postcode=form.get("destination_postcode"),
-        destination_contact_name=form.get("destination_contact_name"),
-        destination_phone_country_code=form.get("destination_phone_country_code"),
-        destination_phone_number=form.get("destination_phone_number"),
-        contact_email=form.get("contact_email"),
-        cargo_weight_kg=float(form.get("cargo_weight_kg")),
-        currency_code=form.get("currency_code"),
-        price_amount=float(form.get("price_amount")),
-        description=form.get("description") or "write any special requirements",
-        status="pending_documents"
+@category1_bp.route("/")
+def marketplace():
+    """Public marketplace - show only approved listings"""
+    # Get filter parameters
+    origin = request.args.get('origin', '').strip()
+    destination = request.args.get('destination', '').strip()
+    date_from = request.args.get('date_from', '').strip()
+    date_to = request.args.get('date_to', '').strip()
+    max_price = request.args.get('max_price', '').strip()
+    sort_by = request.args.get('sort', 'newest')
+    
+    # Base query - only approved listings
+    query = Category1Listing.query.filter_by(admin_status="approved")
+    
+    # Apply filters
+    if origin:
+        query = query.filter(Category1Listing.origin.ilike(f'%{origin}%'))
+    if destination:
+        query = query.filter(Category1Listing.destination.ilike(f'%{destination}%'))
+    if date_from:
+        query = query.filter(Category1Listing.travel_date >= datetime.strptime(date_from, '%Y-%m-%d').date())
+    if date_to:
+        query = query.filter(Category1Listing.travel_date <= datetime.strptime(date_to, '%Y-%m-%d').date())
+    if max_price:
+        query = query.filter(Category1Listing.final_price <= float(max_price))
+    
+    # Apply sorting
+    if sort_by == 'price_low':
+        query = query.order_by(Category1Listing.final_price.asc())
+    elif sort_by == 'price_high':
+        query = query.order_by(Category1Listing.final_price.desc())
+    elif sort_by == 'discount':
+        query = query.order_by(Category1Listing.discount_percent.desc())
+    else:  # newest
+        query = query.order_by(Category1Listing.created_at.desc())
+    
+    listings = query.all()
+    
+    return render_template(
+        "category1_marketplace.html", 
+        listings=listings,
+        filters={
+            'origin': origin,
+            'destination': destination,
+            'date_from': date_from,
+            'date_to': date_to,
+            'max_price': max_price,
+            'sort': sort_by
+        }
     )
-    db.session.add(listing)
-    db.session.commit()
-
-    return redirect(url_for("category1.upload_docs", listing_uid=listing.listing_uid))
 
 
-@category1_bp.route("/<listing_uid>/upload-docs", methods=["GET", "POST"])
-@login_required
-def upload_docs(listing_uid):
+@category1_bp.route("/<int:listing_id>")
+def detail(listing_id):
+    """View single listing details (public)"""
     listing = Category1Listing.query.filter_by(
-        listing_uid=listing_uid, seller_id=session["user_id"]
+        id=listing_id, 
+        admin_status="approved"
     ).first_or_404()
-
-    if request.method == "GET":
-        return render_template("category1_new_step2.html", listing=listing)
-
-    data = request.get_json()
-    listing.ticket_copy_url = data.get("ticket_copy_url")
-    listing.passport_front_url = data.get("passport_front_url")
-    listing.passport_back_url = data.get("passport_back_url")
-    listing.status = "pending_phone_verification"
-    db.session.commit()
-
-    return jsonify({
-        "message": "Documents saved. Proceed to phone verification.",
-        "next": url_for("category1.verify_phone", listing_uid=listing_uid)
-    })
+    
+    # ✅ Check if current user can view full phone numbers
+    user_can_view_phone = False
+    if 'user_id' in session:
+        user_can_view_phone = can_view_full_phone(session['user_id'], listing_id)
+    
+    return render_template(
+        "category1_detail.html", 
+        listing=listing,
+        can_view_full_phone=user_can_view_phone
+    )
 
 
-@category1_bp.route("/<listing_uid>/verify-phone", methods=["GET", "POST"])
+# ============================================================================
+# CREATE LISTING FLOW (3-STEP WIZARD) - REQUIRES AUTH
+# ============================================================================
+
+@category1_bp.route("/listings/new", methods=["GET"])
 @login_required
-def verify_phone(listing_uid):
-    listing = Category1Listing.query.filter_by(
-        listing_uid=listing_uid, seller_id=session["user_id"]
-    ).first_or_404()
+def create_listing():
+    """Show 3-step wizard for creating new listing"""
+    return render_template("category1/listing_wizard.html", mode="create")
 
-    if request.method == "GET":
-        return render_template("category1_new_step3.html", listing=listing)
 
-    listing.status = "pending_admin_review"
-    db.session.commit()
-
-    return jsonify({
-        "message": (
-            "Thank you for choosing Maa Express. Your identity documents are "
-            "securely stored in our database and are accessible only to authorized "
-            "administrators for verification purposes. We will review your listing "
-            "and will publish ASAP."
+@category1_bp.route("/listings/new", methods=["POST"])
+@login_required
+def create_listing_submit():
+    """Handle final submission after step 3 (phone verification)"""
+    try:
+        data = request.get_json()
+        
+        # ========================================
+        # VALIDATION
+        # ========================================
+        
+        # Required fields
+        required_fields = [
+            "origin", "origin_airport", "destination", "destination_airport",
+            "travel_date", "service_type", "currency", "price_per_kg", 
+            "total_weight", "origin_phone_number", "phone_verified"
+        ]
+        
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        # Ensure phone is verified
+        if str(data.get("phone_verified")).lower() != "true":
+            return jsonify({"error": "Phone number must be verified"}), 400
+        
+        # Validate currency (3-letter ISO code)
+        currency = data.get("currency", "AUD").upper()
+        if len(currency) != 3 or not currency.isalpha():
+            return jsonify({"error": "Invalid currency code"}), 400
+        
+        # Parse date
+        try:
+            travel_date = datetime.strptime(data["travel_date"], "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid date format"}), 400
+        
+        if travel_date <= datetime.now().date():
+            return jsonify({"error": "Travel date must be in the future"}), 400
+        
+        # Parse numeric values
+        try:
+            price_per_kg = Decimal(str(data["price_per_kg"]))
+            total_weight = Decimal(str(data["total_weight"]))
+            discount_percent = Decimal(str(data.get("discount_percent", "0")))
+        except (ValueError, TypeError, ArithmeticError):
+            return jsonify({"error": "Invalid numeric values"}), 400
+        
+        # Validate ranges
+        if price_per_kg <= 0 or price_per_kg > 10000:
+            return jsonify({"error": "Price per kg must be between 0 and 10000"}), 400
+        
+        if total_weight <= 0 or total_weight > 100:
+            return jsonify({"error": "Total weight must be between 0 and 100 kg"}), 400
+        
+        if discount_percent < 0 or discount_percent > 100:
+            return jsonify({"error": "Discount must be between 0 and 100"}), 400
+        
+        # ========================================
+        # AUTO-GENERATE TITLE
+        # ========================================
+        
+        title = data.get("title", "").strip()
+        if not title:
+            title = f"{data['origin']} → {data['destination']} | {currency} {price_per_kg}/kg | {total_weight}kg"
+        
+        # Truncate title if too long
+        if len(title) > 255:
+            title = title[:252] + "..."
+        
+        # ========================================
+        # CREATE LISTING (EXCLUDE GENERATED COLUMNS)
+        # ========================================
+        
+        listing = Category1Listing(
+            user_id=session["user_id"],
+            title=title,
+            description=data.get("description", "").strip()[:2000],
+            
+            # ✅ Service Type
+            service_type=data["service_type"][:255],
+            
+            # Phone numbers (E.164 format)
+            origin_phone_number=data["origin_phone_number"],
+            destination_phone_number=data.get("destination_phone_number", ""),
+            
+            # Origin details
+            origin=data["origin"][:255],
+            origin_airport=data["origin_airport"][:255],  # ✅ Now stores full airport name
+            origin_delivery_location=data.get("origin_delivery_location", "")[:255],
+            origin_delivery_postcode=data.get("origin_delivery_postcode", "")[:20],
+            
+            # Destination details
+            destination=data["destination"][:255],
+            destination_airport=data["destination_airport"][:255],  # ✅ Now stores full airport name
+            destination_delivery_location=data.get("destination_delivery_location", "")[:255],
+            destination_delivery_postcode=data.get("destination_delivery_postcode", "")[:20],
+            
+            # Travel date
+            travel_date=travel_date,
+            
+            # Currency
+            currency=currency,
+            
+            # Pricing (DO NOT SET base_price or final_price - they're GENERATED by MySQL)
+            price_per_kg=price_per_kg,
+            total_weight=total_weight,
+            discount_percent=discount_percent,
+            
+            # Document URLs (from Firebase Storage)
+            passport_photo_url=data.get("passport_photo_url", "")[:500],
+            ticket_copy_url=data.get("ticket_copy_url", "")[:500],
+            
+            # Admin approval status
+            admin_status="pending"
         )
-    })
-
-
-@category1_bp.route("/view/<listing_uid>")
-def detail(listing_uid):
-    listing = Category1Listing.query.filter_by(
-        listing_uid=listing_uid, status="approved"
-    ).first_or_404()
-    return render_template("category1_detail.html", listing=listing)
-
-
-@category1_bp.post("/api/<listing_uid>/purchase")
-@login_required
-def purchase(listing_uid):
-    listing = Category1Listing.query.filter_by(
-        listing_uid=listing_uid, status="approved"
-    ).first_or_404()
-
-    data = request.get_json()
-    order_id = data.get("order_id")
-
-    listing.buyer_id = session["user_id"]
-    listing.status = "sold"
-
-    def gen_code(n):
-        import random, string
-        return ''.join(random.choices(string.digits, k=n))
-
-    listing.parcel_number = gen_code(8)
-    listing.secret_code_handover = gen_code(6)
-    listing.secret_code_delivery = gen_code(6)
-
-    db.session.commit()
-
-    return jsonify({
-        "message": "Order saved",
-        "next_url": url_for("category1.buyer_step1", listing_uid=listing_uid)
-    })
-
-
-@category1_bp.route("/buyer/<listing_uid>/step1", methods=["GET", "POST"])
-@login_required
-def buyer_step1(listing_uid):
-    listing = Category1Listing.query.filter_by(
-        listing_uid=listing_uid, buyer_id=session["user_id"]
-    ).first_or_404()
-
-    if request.method == "GET":
-        return render_template("buyer_step1.html", listing=listing)
-
-    data = request.get_json()
-    identity_doc_url = data.get("identity_doc_url")
-    identity_doc_type = data.get("identity_doc_type")
-
-    sender_name = data.get("sender_name")
-    sender_address = data.get("sender_address")
-    sender_phone_country_code = data.get("sender_phone_country_code")
-    sender_phone_number = data.get("sender_phone_number")
-    sender_email = data.get("sender_email")
-
-    receiver_name = data.get("receiver_name")
-    receiver_address = data.get("receiver_address")
-    receiver_phone_country_code = data.get("receiver_phone_country_code")
-    receiver_phone_number = data.get("receiver_phone_number")
-    receiver_email = data.get("receiver_email")
-
-    delivery_address_box = data.get("delivery_address_box")
-    delivery_country = listing.destination_country
-
-    existing = Category1BuyerInfo.query.filter_by(
-        listing_id=listing.id, buyer_id=session["user_id"]
-    ).first()
-
-    if existing:
-        db.session.delete(existing)
+        
+        db.session.add(listing)
         db.session.commit()
-
-    buyer_info = Category1BuyerInfo(
-        listing_id=listing.id,
-        buyer_id=session["user_id"],
-        sender_name=sender_name,
-        sender_address=sender_address,
-        sender_phone_country_code=sender_phone_country_code,
-        sender_phone_number=sender_phone_number,
-        sender_email=sender_email,
-        receiver_name=receiver_name,
-        receiver_address=receiver_address,
-        receiver_phone_country_code=receiver_phone_country_code,
-        receiver_phone_number=receiver_phone_number,
-        receiver_email=receiver_email,
-        delivery_country=delivery_country,
-        delivery_address_box=delivery_address_box,
-        identity_doc_type=identity_doc_type,
-        identity_doc_url=identity_doc_url,
-        buyer_phone_verified=False
-    )
-    db.session.add(buyer_info)
-    db.session.commit()
-
-    return jsonify({
-        "message": (
-            "Thank you for choosing Maa Express. Your identity documents "
-            "are securely stored in our database and are accessible only to "
-            "authorized administrators for verification purposes."
-        ),
-        "next_url": url_for("category1.buyer_codes", listing_uid=listing_uid)
-    })
+        
+        # ========================================
+        # SUCCESS RESPONSE
+        # ========================================
+        
+        return jsonify({
+            "success": True,
+            "message": "Thank you for choosing Maa Express. Your listing has been submitted and is pending admin approval.",
+            "listing_id": listing.id,
+            "redirect_url": url_for("account.account")
+        }), 201
+        
+    except ValueError as e:
+        return jsonify({"error": f"Invalid data format: {str(e)}"}), 400
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error creating listing: {str(e)}")
+        return jsonify({"error": f"Failed to create listing: {str(e)}"}), 500
 
 
-@category1_bp.route("/buyer/<listing_uid>/codes", methods=["GET"])
+# ============================================================================
+# EDIT LISTING FLOW (3-STEP WIZARD) - REQUIRES AUTH & OWNERSHIP
+# ============================================================================
+
+@category1_bp.route("/listings/<int:listing_id>/edit", methods=["GET"])
 @login_required
-def buyer_codes(listing_uid):
-    listing = Category1Listing.query.filter_by(
-        listing_uid=listing_uid, buyer_id=session["user_id"]
-    ).first_or_404()
-    buyer_info = Category1BuyerInfo.query.filter_by(
-        listing_id=listing.id, buyer_id=session["user_id"]
-    ).first()
-    return render_template("buyer_codes.html", listing=listing, buyer_info=buyer_info)
+def edit_listing(listing_id):
+    """Show 3-step wizard for editing existing listing"""
+    listing = Category1Listing.query.get_or_404(listing_id)
+    
+    # Only allow owner to edit
+    if listing.user_id != session["user_id"]:
+        flash("You don't have permission to edit this listing", "error")
+        return redirect(url_for("account.account"))
+    
+    return render_template("category1/listing_wizard.html", mode="edit", listing=listing)
 
 
-@category1_bp.post("/api/buyer/<listing_uid>/verify-phone")
+@category1_bp.route("/listings/<int:listing_id>/edit", methods=["POST"])
 @login_required
-def buyer_verify_phone(listing_uid):
-    listing = Category1Listing.query.filter_by(
-        listing_uid=listing_uid, buyer_id=session["user_id"]
-    ).first_or_404()
-    buyer_info = Category1BuyerInfo.query.filter_by(
-        listing_id=listing.id, buyer_id=session["user_id"]
-    ).first_or_404()
+def update_listing(listing_id):
+    """Handle final submission after step 3 (phone verification) in edit mode"""
+    try:
+        listing = Category1Listing.query.get_or_404(listing_id)
+        
+        # Only allow owner to update
+        if listing.user_id != session["user_id"]:
+            return jsonify({"error": "Unauthorized"}), 403
+        
+        data = request.get_json()
+        
+        # ========================================
+        # VALIDATION (same as create)
+        # ========================================
+        
+        required_fields = [
+            "origin", "origin_airport", "destination", "destination_airport",
+            "travel_date", "service_type", "currency", "price_per_kg", 
+            "total_weight", "origin_phone_number"
+        ]
+        
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        # Parse date
+        try:
+            travel_date = datetime.strptime(data["travel_date"], "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid date format"}), 400
+        
+        if travel_date <= datetime.now().date():
+            return jsonify({"error": "Travel date must be in the future"}), 400
+        
+        try:
+            price_per_kg = Decimal(str(data["price_per_kg"]))
+            total_weight = Decimal(str(data["total_weight"]))
+            discount_percent = Decimal(str(data.get("discount_percent", "0")))
+        except (ValueError, TypeError, ArithmeticError):
+            return jsonify({"error": "Invalid numeric values"}), 400
+        
+        # Validate currency
+        currency = data.get("currency", listing.currency).upper()
+        if len(currency) != 3 or not currency.isalpha():
+            return jsonify({"error": "Invalid currency code"}), 400
+        
+        # ========================================
+        # UPDATE LISTING (EXCLUDE GENERATED COLUMNS)
+        # ========================================
+        
+        # Auto-generate title if not provided
+        title = data.get("title", "").strip()
+        if not title:
+            title = f"{data['origin']} → {data['destination']} | {currency} {price_per_kg}/kg | {total_weight}kg"
+        
+        if len(title) > 255:
+            title = title[:252] + "..."
+        
+        listing.title = title
+        listing.description = data.get("description", "")[:2000]
+        
+        # Update service type
+        listing.service_type = data["service_type"][:255]
+        
+        # Update phone numbers
+        listing.origin_phone_number = data["origin_phone_number"]
+        listing.destination_phone_number = data.get("destination_phone_number", "")
+        
+        # Update origin details
+        listing.origin = data["origin"][:255]
+        listing.origin_airport = data["origin_airport"][:255]  # ✅ Full airport name
+        listing.origin_delivery_location = data.get("origin_delivery_location", "")[:255]
+        listing.origin_delivery_postcode = data.get("origin_delivery_postcode", "")[:20]
+        
+        # Update destination details
+        listing.destination = data["destination"][:255]
+        listing.destination_airport = data["destination_airport"][:255]  # ✅ Full airport name
+        listing.destination_delivery_location = data.get("destination_delivery_location", "")[:255]
+        listing.destination_delivery_postcode = data.get("destination_delivery_postcode", "")[:20]
+        
+        # Update travel date
+        listing.travel_date = travel_date
+        
+        # Update currency
+        listing.currency = currency
+        
+        # Update pricing (DO NOT UPDATE base_price or final_price - they're GENERATED)
+        listing.price_per_kg = price_per_kg
+        listing.total_weight = total_weight
+        listing.discount_percent = discount_percent
+        
+        # Update document URLs if provided (from Firebase Storage)
+        if data.get("passport_photo_url"):
+            listing.passport_photo_url = data["passport_photo_url"][:500]
+        if data.get("ticket_copy_url"):
+            listing.ticket_copy_url = data["ticket_copy_url"][:500]
+        
+        # If listing was approved, set back to pending for re-review
+        if listing.admin_status == "approved":
+            listing.admin_status = "pending"
+        
+        # Update timestamp
+        listing.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Listing updated successfully. Changes will be reviewed by admin." if listing.admin_status == "pending" else "Listing updated successfully.",
+            "listing_id": listing.id,
+            "redirect_url": url_for("account.account")
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating listing: {str(e)}")
+        return jsonify({"error": f"Failed to update listing: {str(e)}"}), 500
 
-    buyer_info.buyer_phone_verified = True
-    db.session.commit()
 
-    seller = listing.seller
+# ============================================================================
+# DELETE LISTING - REQUIRES AUTH & OWNERSHIP
+# ============================================================================
 
+@category1_bp.route("/listings/<int:listing_id>/delete", methods=["POST"])
+@login_required
+def delete_listing(listing_id):
+    """User soft-deletes their own listing"""
+    listing = Category1Listing.query.get_or_404(listing_id)
+    
+    # Only allow owner to delete
+    if listing.user_id != session["user_id"]:
+        return jsonify({"error": "Unauthorized"}), 403
+    
+    try:
+        # Soft delete - change status instead of removing from DB
+        listing.admin_status = "deleted"
+        listing.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        flash("Listing deleted successfully", "success")
+        return jsonify({"success": True, "redirect_url": url_for("account.account")}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Failed to delete listing: {str(e)}"}), 500
+
+
+# ============================================================================
+# API ROUTES (AJAX/JSON)
+# ============================================================================
+
+@category1_bp.route("/api/listings/search", methods=["GET"])
+def api_search():
+    """Search listings via AJAX (public)"""
+    query = request.args.get('q', '').strip()
+    
+    if not query or len(query) < 2:
+        return jsonify({"results": []}), 200
+    
+    listings = Category1Listing.query.filter(
+        Category1Listing.admin_status == "approved"
+    ).filter(
+        db.or_(
+            Category1Listing.title.ilike(f'%{query}%'),
+            Category1Listing.origin.ilike(f'%{query}%'),
+            Category1Listing.destination.ilike(f'%{query}%'),
+            Category1Listing.origin_airport.ilike(f'%{query}%'),
+            Category1Listing.destination_airport.ilike(f'%{query}%')
+        )
+    ).limit(10).all()
+    
+    results = [{
+        "id": l.id,
+        "title": l.title,
+        "origin": l.origin,
+        "destination": l.destination,
+        "price": float(l.final_price) if l.final_price else 0,
+        "currency": l.currency,
+        "url": url_for('category1.detail', listing_id=l.id)
+    } for l in listings]
+    
+    return jsonify({"results": results}), 200
+
+
+@category1_bp.route("/api/listings/<int:listing_id>/status", methods=["GET"])
+@login_required
+def api_listing_status(listing_id):
+    """Get listing status (for polling during admin review)"""
+    listing = Category1Listing.query.get_or_404(listing_id)
+    
+    # Only allow owner to check status
+    if listing.user_id != session["user_id"]:
+        return jsonify({"error": "Unauthorized"}), 403
+    
     return jsonify({
-        "parcel_number": listing.parcel_number,
-        "secret_code_handover": listing.secret_code_handover,
-        "secret_code_delivery": listing.secret_code_delivery,
-        "seller_origin_phone": f"{listing.origin_phone_country_code} {listing.origin_phone_number}",
-        "seller_destination_phone": f"{listing.destination_phone_country_code} {listing.destination_phone_number}",
-        "seller_email": seller.email
-    })
+        "id": listing.id,
+        "admin_status": listing.admin_status,
+        "updated_at": listing.updated_at.isoformat()
+    }), 200
+
+
+# ============================================================================
+# ERROR HANDLERS
+# ============================================================================
+
+@category1_bp.errorhandler(404)
+def not_found(e):
+    """Custom 404 for category1 routes"""
+    if request.path.startswith('/category1/api/'):
+        return jsonify({"error": "Resource not found"}), 404
+    return render_template("errors/404.html", message="Listing not found"), 404
+
+
+@category1_bp.errorhandler(500)
+def internal_error(e):
+    """Custom 500 for category1 routes"""
+    db.session.rollback()
+    if request.path.startswith('/category1/api/'):
+        return jsonify({"error": "Internal server error"}), 500
+    return render_template("errors/500.html", message="Something went wrong"), 500

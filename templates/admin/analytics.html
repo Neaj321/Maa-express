@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+<div class="admin-header">
+  <h2>Analytics (last {{ days }} days)</h2>
+  <nav class="admin-tabs">
+    <a href="{{ url_for('admin.dashboard') }}">Overview</a>
+    <a href="{{ url_for('admin.category1_listings') }}">Category 1</a>
+    <a href="{{ url_for('admin.category2_listings') }}">Category 2</a>
+    <a href="{{ url_for('admin.category3_products') }}">Category 3</a>
+    <a href="{{ url_for('admin.users') }}">Users</a>
+    <a href="{{ url_for('admin.analytics') }}" class="active">Analytics</a>
+    <a href="{{ url_for('admin.settings') }}">Settings</a>
+  </nav>
+</div>
+
+<div class="panel-grid">
+  <section class="panel">
+    <h3>Daily Visits</h3>
+    {% if daily_visits %}
+    <table class="listing">
+      <tr><th>Date</th><th>Visits</th></tr>
+      {% for d, c in daily_visits %}
+      <tr><td>{{ d }}</td><td>{{ c }}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No visit data available.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h3>Daily Logins</h3>
+    {% if daily_logins %}
+    <table class="listing">
+      <tr><th>Date</th><th>Logins</th></tr>
+      {% for d, c in daily_logins %}
+      <tr><td>{{ d }}</td><td>{{ c }}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No login data available.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h3>Daily Registrations</h3>
+    {% if daily_registrations %}
+    <table class="listing">
+      <tr><th>Date</th><th>Users</th></tr>
+      {% for d, c in daily_registrations %}
+      <tr><td>{{ d }}</td><td>{{ c }}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No registration data available.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h3>Most Active Users</h3>
+    {% if active_users %}
+    <table class="listing">
+      <tr><th>Name</th><th>Email</th><th>Logins</th></tr>
+      {% for uid, name, email, cnt in active_users %}
+      <tr><td>{{ name or 'N/A' }}</td><td>{{ email }}</td><td>{{ cnt }}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No active user data available.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,1547 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if mode == 'edit' %}Edit Listing{% else %}Create New Listing{% endif %} - Maa Express
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================
+   WIZARD CONTAINER
+   ============================================ */
+.wizard-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.wizard-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.wizard-header h1 {
+  font-size: 2rem;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.wizard-subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+/* ============================================
+   PROGRESS INDICATOR
+   ============================================ */
+.wizard-progress {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 48px;
+  position: relative;
+}
+
+.wizard-progress::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+}
+
+.progress-step.active .step-number {
+  background: #1a73e8;
+  color: white;
+}
+
+.progress-step.completed .step-number {
+  background: #10b981;
+  color: white;
+}
+
+.step-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.progress-step.active .step-label {
+  color: #1a73e8;
+}
+
+/* ============================================
+   WIZARD STEPS
+   ============================================ */
+.wizard-step {
+  display: none;
+}
+
+.wizard-step.active {
+  display: block;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-title {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.step-description {
+  color: #6b7280;
+  margin-bottom: 32px;
+}
+
+/* ============================================
+   FORM SECTIONS
+   ============================================ */
+.form-section {
+  background: #f9fafb;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px solid #e5e7eb;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  color: #374151;
+  margin-bottom: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  width: 100%;
+}
+
+.label-text {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.label-optional {
+  color: #9ca3af;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+.form-input.error {
+  border-color: #ef4444;
+}
+
+.form-input.success {
+  border-color: #10b981;
+}
+
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.input-hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* ============================================
+   SERVICE TYPE SECTION
+   ============================================ */
+.service-type-section {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px solid #e5e7eb;
+}
+
+.service-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.service-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.service-option:hover {
+  border-color: #1a73e8;
+  background: #f0f7ff;
+}
+
+.service-option input[type="radio"] {
+  margin-top: 2px;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #1a73e8;
+}
+
+.service-option.selected {
+  border-color: #1a73e8;
+  background: #eff6ff;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.15);
+}
+
+.service-label {
+  flex: 1;
+  cursor: pointer;
+}
+
+.service-label-text {
+  display: block;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.service-label-desc {
+  display: block;
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* ============================================
+   PHONE INPUT
+   ============================================ */
+.phone-input-group {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px;
+}
+
+.country-code-select {
+  padding: 10px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* ============================================
+   PRICING SECTION
+   ============================================ */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.price-preview {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #1a73e8;
+  margin-top: 20px;
+}
+
+.price-preview-title {
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 12px;
+}
+
+.price-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+}
+
+.price-label {
+  color: #6b7280;
+}
+
+.price-value {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.price-row.total {
+  border-top: 2px solid #1a73e8;
+  padding-top: 8px;
+  margin-top: 4px;
+  font-size: 1.1rem;
+}
+
+.price-row.total .price-value {
+  color: #1a73e8;
+  font-weight: 700;
+}
+
+/* ============================================
+   FILE UPLOAD
+   ============================================ */
+.file-upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.file-upload-area:hover {
+  border-color: #1a73e8;
+  background: #f0f7ff;
+}
+
+.file-upload-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.file-upload-text {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-name {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.upload-progress {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  background: #1a73e8;
+  transition: width 0.3s;
+}
+
+/* ============================================
+   PHONE VERIFICATION
+   ============================================ */
+.verification-section {
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.verification-title {
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verification-phone {
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  color: #1f2937;
+  font-weight: 600;
+  margin: 12px 0;
+}
+
+.otp-input-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.otp-input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  letter-spacing: 4px;
+}
+
+.verification-success {
+  background: #d1fae5;
+  border-color: #10b981;
+}
+
+.verification-success .verification-title {
+  color: #065f46;
+}
+
+/* ============================================
+   NAVIGATION BUTTONS
+   ============================================ */
+.wizard-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid #e5e7eb;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #1a73e8;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1557b0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #d1d5db;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* ============================================
+   MESSAGES
+   ============================================ */
+.form-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  display: none;
+}
+
+.form-message.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  display: block;
+}
+
+.form-message.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  display: block;
+}
+
+.form-message.info {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+  display: block;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
+  .wizard-container {
+    margin: 20px 10px;
+    padding: 16px;
+  }
+
+  .wizard-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .phone-input-group {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-navigation {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+  <!-- Wizard Header -->
+  <div class="wizard-header">
+    <h1>
+      {% if mode == 'edit' %}
+        ✏️ Edit Your Listing
+      {% else %}
+        ➕ Create New Listing
+      {% endif %}
+    </h1>
+    <p class="wizard-subtitle">Complete all steps to publish your luggage space listing</p>
+  </div>
+
+  <!-- Progress Indicator -->
+  <div class="wizard-progress">
+    <div class="progress-step active" data-step="1">
+      <div class="step-number">1</div>
+      <div class="step-label">Basic Info</div>
+    </div>
+    <div class="progress-step" data-step="2">
+      <div class="step-number">2</div>
+      <div class="step-label">Pricing</div>
+    </div>
+    <div class="progress-step" data-step="3">
+      <div class="step-number">3</div>
+      <div class="step-label">Verification</div>
+    </div>
+  </div>
+
+  <!-- Form Container -->
+  <form id="listing-wizard-form">
+    
+    <!-- ============================================
+         STEP 1: BASIC INFORMATION
+         ============================================ -->
+    <div class="wizard-step active" data-step="1">
+      <h2 class="step-title">Basic Information</h2>
+      <p class="step-description">Tell us about your travel route and available luggage space</p>
+
+      <!-- Origin Section -->
+      <div class="form-section">
+        <h3 class="section-title">📍 Origin (Departure)</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Origin City/Country *</span>
+              <input 
+                type="text" 
+                name="origin" 
+                class="form-input" 
+                placeholder="e.g., Sydney, Australia"
+                value="{% if mode == 'edit' %}{{ listing.origin }}{% endif %}"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Airport Name *</span>
+              <input 
+                type="text" 
+                name="origin_airport" 
+                class="form-input" 
+                placeholder="e.g., Sydney Kingsford Smith Airport"
+                value="{% if mode == 'edit' %}{{ listing.origin_airport }}{% endif %}"
+                required
+              />
+              <span class="input-hint">Enter full airport name (not code)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Pickup Location <span class="label-optional">(Optional)</span></span>
+              <input 
+                type="text" 
+                name="origin_delivery_location" 
+                class="form-input" 
+                placeholder="e.g., 123 Main St, Suburb"
+                value="{% if mode == 'edit' %}{{ listing.origin_delivery_location }}{% endif %}"
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Postcode <span class="label-optional">(Optional)</span></span>
+              <input 
+                type="text" 
+                name="origin_delivery_postcode" 
+                class="form-input" 
+                placeholder="e.g., 2000"
+                maxlength="20"
+                value="{% if mode == 'edit' %}{{ listing.origin_delivery_postcode }}{% endif %}"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Origin Phone -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">Origin Contact Phone *</span>
+            <div class="phone-input-group">
+              <select name="origin_phone_country_code" class="country-code-select" required>
+                <option value="+61" {% if mode == 'edit' and listing.origin_phone_number.startswith('+61') %}selected{% endif %}>🇦🇺 +61</option>
+                <option value="+1" {% if mode == 'edit' and listing.origin_phone_number.startswith('+1') %}selected{% endif %}>🇺🇸 +1</option>
+                <option value="+44" {% if mode == 'edit' and listing.origin_phone_number.startswith('+44') %}selected{% endif %}>🇬🇧 +44</option>
+                <option value="+880" {% if mode == 'edit' and listing.origin_phone_number.startswith('+880') %}selected{% endif %}>🇧🇩 +880</option>
+                <option value="+91" {% if mode == 'edit' and listing.origin_phone_number.startswith('+91') %}selected{% endif %}>🇮🇳 +91</option>
+                <option value="+86" {% if mode == 'edit' and listing.origin_phone_number.startswith('+86') %}selected{% endif %}>🇨🇳 +86</option>
+              </select>
+              <input 
+                type="tel" 
+                name="origin_phone_local" 
+                class="form-input" 
+                placeholder="412345678"
+                pattern="[0-9]{6,15}"
+                value="{% if mode == 'edit' %}{{ listing.origin_phone_number[3:] if listing.origin_phone_number else '' }}{% endif %}"
+                required
+              />
+            </div>
+            <span class="input-hint">This will be verified in Step 3</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Destination Section -->
+      <div class="form-section">
+        <h3 class="section-title">📍 Destination (Arrival)</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Destination City/Country *</span>
+              <input 
+                type="text" 
+                name="destination" 
+                class="form-input" 
+                placeholder="e.g., Dhaka, Bangladesh"
+                value="{% if mode == 'edit' %}{{ listing.destination }}{% endif %}"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Airport Name *</span>
+              <input 
+                type="text" 
+                name="destination_airport" 
+                class="form-input" 
+                placeholder="e.g., Hazrat Shahjalal International Airport"
+                value="{% if mode == 'edit' %}{{ listing.destination_airport }}{% endif %}"
+                required
+              />
+              <span class="input-hint">Enter full airport name (not code)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Delivery Location <span class="label-optional">(Optional)</span></span>
+              <input 
+                type="text" 
+                name="destination_delivery_location" 
+                class="form-input" 
+                placeholder="e.g., Gulshan, Dhaka"
+                value="{% if mode == 'edit' %}{{ listing.destination_delivery_location }}{% endif %}"
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Postcode <span class="label-optional">(Optional)</span></span>
+              <input 
+                type="text" 
+                name="destination_delivery_postcode" 
+                class="form-input" 
+                placeholder="e.g., 1212"
+                maxlength="20"
+                value="{% if mode == 'edit' %}{{ listing.destination_delivery_postcode }}{% endif %}"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Destination Phone -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">Destination Contact Phone <span class="label-optional">(Optional)</span></span>
+            <div class="phone-input-group">
+              <select name="destination_phone_country_code" class="country-code-select">
+                <option value="">--</option>
+                <option value="+61" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+61') %}selected{% endif %}>🇦🇺 +61</option>
+                <option value="+1" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+1') %}selected{% endif %}>🇺🇸 +1</option>
+                <option value="+44" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+44') %}selected{% endif %}>🇬🇧 +44</option>
+                <option value="+880" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+880') %}selected{% endif %}>🇧🇩 +880</option>
+                <option value="+91" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+91') %}selected{% endif %}>🇮🇳 +91</option>
+              </select>
+              <input 
+                type="tel" 
+                name="destination_phone_local" 
+                class="form-input" 
+                placeholder="1712345678"
+                pattern="[0-9]{6,15}"
+                value="{% if mode == 'edit' and listing.destination_phone_number %}{{ listing.destination_phone_number[4:] }}{% endif %}"
+              />
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Travel Date & Service Type -->
+      <div class="form-section">
+        <h3 class="section-title">📅 Travel Details</h3>
+        
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">Travel Date *</span>
+            <input 
+              type="date" 
+              name="travel_date" 
+              class="form-input"
+              value="{% if mode == 'edit' %}{{ listing.travel_date.strftime('%Y-%m-%d') }}{% endif %}"
+              required
+            />
+            <span class="input-hint">Select your flight date</span>
+          </label>
+        </div>
+
+        <!-- ✅ SERVICE TYPE SECTION -->
+        <div class="form-group">
+          <label class="label-text">Service Type *</label>
+          <div class="service-options">
+            
+            <label class="service-option {% if not mode or (mode == 'edit' and listing.service_type == 'Included pick up at Origin and delivery at Destination.') %}selected{% endif %}">
+              <input 
+                type="radio" 
+                name="service_type" 
+                value="Included pick up at Origin and delivery at Destination."
+                {% if not mode or (mode == 'edit' and listing.service_type == 'Included pick up at Origin and delivery at Destination.') %}checked{% endif %}
+                required
+              />
+              <div class="service-label">
+                <span class="service-label-text">✓ Full Service</span>
+                <span class="service-label-desc">Included pick up at Origin and delivery at Destination</span>
+              </div>
+            </label>
+
+            <label class="service-option {% if mode == 'edit' and listing.service_type == 'Only Pick-up at Origin but receiver to collect at destination.' %}selected{% endif %}">
+              <input 
+                type="radio" 
+                name="service_type" 
+                value="Only Pick-up at Origin but receiver to collect at destination."
+                {% if mode == 'edit' and listing.service_type == 'Only Pick-up at Origin but receiver to collect at destination.' %}checked{% endif %}
+              />
+              <div class="service-label">
+                <span class="service-label-text">📦 Pickup Only</span>
+                <span class="service-label-desc">Only pick-up at Origin, but receiver to collect at destination</span>
+              </div>
+            </label>
+
+            <label class="service-option {% if mode == 'edit' and listing.service_type == 'Included Destination Delivery but sender to drop off at Origin.' %}selected{% endif %}">
+              <input 
+                type="radio" 
+                name="service_type" 
+                value="Included Destination Delivery but sender to drop off at Origin."
+                {% if mode == 'edit' and listing.service_type == 'Included Destination Delivery but sender to drop off at Origin.' %}checked{% endif %}
+              />
+              <div class="service-label">
+                <span class="service-label-text">🚚 Delivery Only</span>
+                <span class="service-label-desc">Included destination delivery, but sender to drop off at Origin</span>
+              </div>
+            </label>
+
+            <label class="service-option {% if mode == 'edit' and listing.service_type == 'Sender to Drop off and Receiver to collect.' %}selected{% endif %}">
+              <input 
+                type="radio" 
+                name="service_type" 
+                value="Sender to Drop off and Receiver to collect."
+                {% if mode == 'edit' and listing.service_type == 'Sender to Drop off and Receiver to collect.' %}checked{% endif %}
+              />
+              <div class="service-label">
+                <span class="service-label-text">🤝 Self Service</span>
+                <span class="service-label-desc">Sender to drop off and receiver to collect</span>
+              </div>
+            </label>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Description (Optional) -->
+      <div class="form-section">
+        <h3 class="section-title">📝 Additional Information</h3>
+        
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">Description <span class="label-optional">(Optional)</span></span>
+            <textarea 
+              name="description" 
+              class="form-textarea" 
+              placeholder="Add any special requirements or information..."
+              maxlength="2000"
+            >{% if mode == 'edit' %}{{ listing.description }}{% endif %}</textarea>
+            <span class="input-hint">Maximum 2000 characters</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="wizard-navigation">
+        <button type="button" class="btn btn-secondary" disabled>← Previous</button>
+        <button type="button" class="btn btn-primary" onclick="nextStep(1)">Next: Pricing →</button>
+      </div>
+    </div>
+
+    <!-- ============================================
+         STEP 2: PRICING & DOCUMENTS
+         ============================================ -->
+    <div class="wizard-step" data-step="2">
+      <h2 class="step-title">Pricing & Documents</h2>
+      <p class="step-description">Set your pricing and upload verification documents</p>
+
+      <!-- Pricing Section -->
+      <div class="form-section">
+        <h3 class="section-title">💰 Pricing Details</h3>
+        
+        <div class="pricing-grid">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Currency *</span>
+              <select name="currency" class="form-select" required>
+                <option value="AUD" {% if mode == 'edit' and listing.currency == 'AUD' %}selected{% endif %}>AUD - Australian Dollar</option>
+                <option value="USD" {% if mode == 'edit' and listing.currency == 'USD' %}selected{% endif %}>USD - US Dollar</option>
+                <option value="EUR" {% if mode == 'edit' and listing.currency == 'EUR' %}selected{% endif %}>EUR - Euro</option>
+                <option value="GBP" {% if mode == 'edit' and listing.currency == 'GBP' %}selected{% endif %}>GBP - British Pound</option>
+                <option value="BDT" {% if mode == 'edit' and listing.currency == 'BDT' %}selected{% endif %}>BDT - Bangladeshi Taka</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Price per kg *</span>
+              <input 
+                type="number" 
+                name="price_per_kg" 
+                class="form-input" 
+                placeholder="50.00"
+                min="0.01"
+                max="10000"
+                step="0.01"
+                value="{% if mode == 'edit' %}{{ listing.price_per_kg }}{% endif %}"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Total Weight (kg) *</span>
+              <input 
+                type="number" 
+                name="total_weight" 
+                class="form-input" 
+                placeholder="20.0"
+                min="0.1"
+                max="100"
+                step="0.1"
+                value="{% if mode == 'edit' %}{{ listing.total_weight }}{% endif %}"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Discount % <span class="label-optional">(Optional)</span></span>
+              <input 
+                type="number" 
+                name="discount_percent" 
+                class="form-input" 
+                placeholder="0"
+                min="0"
+                max="100"
+                step="0.1"
+                value="{% if mode == 'edit' %}{{ listing.discount_percent }}{% else %}0{% endif %}"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Price Preview -->
+        <div class="price-preview">
+          <div class="price-preview-title">💵 Price Preview</div>
+          <div class="price-breakdown">
+            <div class="price-row">
+              <span class="price-label">Price per kg:</span>
+              <span class="price-value" id="preview-price-per-kg">--</span>
+            </div>
+            <div class="price-row">
+              <span class="price-label">Total weight:</span>
+              <span class="price-value" id="preview-weight">--</span>
+            </div>
+            <div class="price-row">
+              <span class="price-label">Base price:</span>
+              <span class="price-value" id="preview-base-price">--</span>
+            </div>
+            <div class="price-row">
+              <span class="price-label">Discount:</span>
+              <span class="price-value" id="preview-discount">--</span>
+            </div>
+            <div class="price-row total">
+              <span class="price-label">Final Price:</span>
+              <span class="price-value" id="preview-final-price">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Document Upload Section -->
+      <div class="form-section">
+        <h3 class="section-title">📄 Verification Documents</h3>
+        <p style="color: #6b7280; margin-bottom: 16px; font-size: 0.9rem;">
+          These documents are for admin verification only and will not be publicly visible
+        </p>
+
+        <!-- Passport Photo -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">Passport Photo Page <span class="label-optional">(Optional)</span></span>
+            <div class="file-upload-area" onclick="document.getElementById('passport-photo-input').click()">
+              <div class="file-upload-icon">📷</div>
+              <div class="file-upload-text">Click to upload passport photo page</div>
+              <small style="color: #9ca3af;">PNG, JPG up to 10MB</small>
+              <input 
+                type="file" 
+                id="passport-photo-input" 
+                class="file-input" 
+                accept="image/*,application/pdf"
+              />
+              <div id="passport-photo-name" class="file-name"></div>
+              <div class="upload-progress" id="passport-photo-progress" style="display: none;">
+                <div class="upload-progress-bar" id="passport-photo-progress-bar"></div>
+              </div>
+            </div>
+            <input type="hidden" id="passport-photo-url" name="passport_photo_url" value="{% if mode == 'edit' %}{{ listing.passport_photo_url }}{% endif %}" />
+          </label>
+        </div>
+
+        <!-- Ticket Copy -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">Flight Ticket Copy <span class="label-optional">(Optional)</span></span>
+            <div class="file-upload-area" onclick="document.getElementById('ticket-copy-input').click()">
+              <div class="file-upload-icon">✈️</div>
+              <div class="file-upload-text">Click to upload flight ticket</div>
+              <small style="color: #9ca3af;">PNG, JPG, PDF up to 5MB</small>
+              <input 
+                type="file" 
+                id="ticket-copy-input" 
+                class="file-input" 
+                accept="image/*,application/pdf"
+              />
+              <div id="ticket-copy-name" class="file-name"></div>
+              <div class="upload-progress" id="ticket-copy-progress" style="display: none;">
+                <div class="upload-progress-bar" id="ticket-copy-progress-bar"></div>
+              </div>
+            </div>
+            <input type="hidden" id="ticket-copy-url" name="ticket_copy_url" value="{% if mode == 'edit' %}{{ listing.ticket_copy_url }}{% endif %}" />
+          </label>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="wizard-navigation">
+        <button type="button" class="btn btn-secondary" onclick="prevStep(2)">← Previous</button>
+        <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next: Verification →</button>
+      </div>
+
+      <div id="step2-message" class="form-message"></div>
+    </div>
+
+    <!-- ============================================
+         STEP 3: PHONE VERIFICATION
+         ============================================ -->
+    <div class="wizard-step" data-step="3">
+      <h2 class="step-title">Phone Verification</h2>
+      <p class="step-description">Verify your phone number to complete the listing</p>
+
+      <!-- Verification Section -->
+      <div class="verification-section">
+        <div class="verification-title">
+          <span>🔐</span>
+          <span>Verify Your Phone Number</span>
+        </div>
+        <p style="color: #92400e; margin-bottom: 12px;">
+          We'll send an OTP to your origin phone number to verify it's yours
+        </p>
+        <div class="verification-phone" id="phone-display">
+          Loading...
+        </div>
+
+        <!-- reCAPTCHA Container -->
+        <div id="recaptcha-container"></div>
+
+        <!-- Send OTP Button -->
+        <button 
+          type="button" 
+          id="send-otp-btn" 
+          class="btn btn-primary" 
+          style="width: 100%; margin-top: 16px;"
+        >
+          📱 Send OTP
+        </button>
+
+        <!-- OTP Input (Hidden initially) -->
+        <div id="otp-input-section" style="display: none; margin-top: 16px;">
+          <label class="form-label">
+            <span class="label-text">Enter 6-digit OTP *</span>
+            <input 
+              type="text" 
+              id="otp-code" 
+              class="otp-input" 
+              placeholder="000000"
+              maxlength="6"
+              pattern="[0-9]{6}"
+            />
+          </label>
+          <button 
+            type="button" 
+            id="verify-otp-btn" 
+            class="btn btn-success" 
+            style="width: 100%; margin-top: 12px;"
+          >
+            ✓ Verify OTP & Submit Listing
+          </button>
+        </div>
+      </div>
+
+      <!-- Hidden input to track phone verification -->
+      <input type="hidden" id="phone-verified" name="phone_verified" value="false" />
+
+      <!-- Navigation Buttons -->
+      <div class="wizard-navigation">
+        <button type="button" class="btn btn-secondary" onclick="prevStep(3)">← Previous</button>
+        <button type="button" class="btn btn-primary" disabled style="opacity: 0.3;">
+          Verify phone first
+        </button>
+      </div>
+
+      <div id="step3-message" class="form-message"></div>
+    </div>
+
+  </form>
+</div>
+
+<!-- ✅ Service Type Radio Button Interaction -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Handle radio button selection visual feedback
+    const serviceOptions = document.querySelectorAll('.service-option');
+    const serviceRadios = document.querySelectorAll('input[name="service_type"]');
+    
+    serviceRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        // Remove 'selected' class from all options
+        serviceOptions.forEach(opt => opt.classList.remove('selected'));
+        
+        // Add 'selected' class to parent label of checked radio
+        if (this.checked) {
+          this.closest('.service-option').classList.add('selected');
+        }
+      });
+    });
+    
+    // Allow clicking anywhere on the label to select
+    serviceOptions.forEach(option => {
+      option.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'INPUT') {
+          const radio = this.querySelector('input[type="radio"]');
+          if (radio) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change'));
+          }
+        }
+      });
+    });
+  });
+</script>
+
+<!-- Firebase Configuration -->
+<script>
+  // Inject Firebase config from backend
+  window.FIREBASE_CONFIG = {
+    apiKey: "{{ config.FIREBASE_API_KEY }}",
+    authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+    projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+    messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
+    appId: "{{ config.FIREBASE_APP_ID }}"
+  };
+</script>
+
+<!-- Firebase SDK (CDN) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+<!-- Wizard mode configuration -->
+<script>
+  window.WIZARD_MODE = "{{ mode }}";
+  {% if mode == 'edit' %}
+  window.LISTING_ID = {{ listing.id }};
+  window.UPDATE_URL = "{{ url_for('category1.update_listing', listing_id=listing.id) }}";
+  {% else %}
+  window.CREATE_URL = "{{ url_for('category1.create_listing_submit') }}";
+  {% endif %}
+
+  // Phone configuration for Step 3
+  window.ORIGIN_PHONE_COUNTRY_CODE = "{{ listing.origin_phone_number[:3] if mode == 'edit' and listing.origin_phone_number else '+61' }}";
+  window.ORIGIN_PHONE_LOCAL = "{{ listing.origin_phone_number[3:] if mode == 'edit' and listing.origin_phone_number else '' }}";
+</script>
+
+<!-- Link to external wizard JavaScript -->
+<script src="{{ url_for('static', filename='js/listing_wizard.js') }}"></script>
+
+{% endblock %}
+      <h2 class="step-title">Origin & Destination Details</h2>
+      <p class="step-description">Provide pickup and delivery location information</p>
+
+      <!-- Origin Section -->
+      <div class="form-section">
+        <h3 class="section-title">📍 Origin (Departure)</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Origin City/Country *</span>
+              <input 
+                type="text" 
+                name="origin" 
+                class="form-input" 
+                placeholder="e.g., Sydney, Australia"
+                value="{% if mode == 'edit' %}{{ listing.origin }}{% endif %}"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Airport Name *</span>
+              <input 
+                type="text" 
+                name="origin_airport" 
+                class="form-input" 
+                placeholder="e.g., Sydney Kingsford Smith Airport"
+                value="{% if mode == 'edit' %}{{ listing.origin_airport }}{% endif %}"
+                required
+              />
+              <span class="input-hint">Enter full airport name (not code)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Pickup Location <span class="label-optional">(Optional)</span></span>
+              <input 
+                type="text" 
+                name="origin_delivery_location" 
+                class="form-input" 
+                placeholder="e.g., 123 Main St, Suburb"
+                value="{% if mode == 'edit' %}{{ listing.origin_delivery_location }}{% endif %}"
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Postcode <span class="label-optional">(Optional)</span></span>
+              <input 
+                type="text" 
+                name="origin_delivery_postcode" 
+                class="form-input" 
+                placeholder="e.g., 2000"
+                maxlength="20"
+                value="{% if mode == 'edit' %}{{ listing.origin_delivery_postcode }}{% endif %}"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Origin Phone -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">Origin Contact Phone *</span>
+            <div class="phone-input-group">
+              <select name="origin_phone_country_code" class="country-code-select" required>
+                <option value="+61" {% if mode == 'edit' and listing.origin_phone_number.startswith('+61') %}selected{% endif %}>🇦🇺 +61</option>
+                <option value="+1" {% if mode == 'edit' and listing.origin_phone_number.startswith('+1') %}selected{% endif %}>🇺🇸 +1</option>
+                <option value="+44" {% if mode == 'edit' and listing.origin_phone_number.startswith('+44') %}selected{% endif %}>🇬🇧 +44</option>
+                <option value="+880" {% if mode == 'edit' and listing.origin_phone_number.startswith('+880') %}selected{% endif %}>🇧🇩 +880</option>
+                <option value="+91" {% if mode == 'edit' and listing.origin_phone_number.startswith('+91') %}selected{% endif %}>🇮🇳 +91</option>
+                <option value="+86" {% if mode == 'edit' and listing.origin_phone_number.startswith('+86') %}selected{% endif %}>🇨🇳 +86</option>
+              </select>
+              <input 
+                type="tel" 
+                name="origin_phone_local" 
+                class="form-input" 
+                placeholder="412345678"
+                pattern="[0-9]{6,15}"
+                value="{% if mode == 'edit' %}{{ listing.origin_phone_number[3:] if listing.origin_phone_number else '' }}{% endif %}"
+                required
+              />
+            </div>
+            <span class="input-hint">This will be verified in Step 3</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Destination Section -->
+      <div class="form-section">
+        <h3 class="section-title">📍 Destination (Arrival)</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Destination City/Country *</span>
+              <input 
+                type="text" 
+                name="destination" 
+                class="form-input" 
+                placeholder="e.g., Dhaka, Bangladesh"
+                value="{% if mode == 'edit' %}{{ listing.destination }}{% endif %}"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Airport Name *</span>
+              <input 
+                type="text" 
+                name="destination_airport" 
+                class="form-input" 
+                placeholder="e.g., Hazrat Shahjalal International Airport"
+                value="{% if mode == 'edit' %}{{ listing.destination_airport }}{% endif %}"
+                required
+              />
+              <span class="input-hint">Enter full airport name (not code)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Delivery Location <span class="label-optional">(Optional)</span></span>
+              <input 
+                type="text" 
+                name="destination_delivery_location" 
+                class="form-input" 
+                placeholder="e.g., Gulshan, Dhaka"
+                value="{% if mode == 'edit' %}{{ listing.destination_delivery_location }}{% endif %}"
+              />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-text">Postcode <span class="label-optional">(Optional)</span></span>
+              <input 
+                type="text" 
+                name="destination_delivery_postcode" 
+                class="form-input" 
+                placeholder="e.g., 1212"
+                maxlength="20"
+                value="{% if mode == 'edit' %}{{ listing.destination_delivery_postcode }}{% endif %}"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Destination Phone -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">Destination Contact Phone <span class="label-optional">(Optional)</span></span>
+            <div class="phone-input-group">
+              <select name="destination_phone_country_code" class="country-code-select">
+                <option value="">--</option>
+                <option value="+61" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+61') %}selected{% endif %}>🇦🇺 +61</option>
+                <option value="+1" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+1') %}selected{% endif %}>🇺🇸 +1</option>
+                <option value="+44" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+44') %}selected{% endif %}>🇬🇧 +44</option>
+                <option value="+880" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+880') %}selected{% endif %}>🇧🇩 +880</option>
+                <option value="+91" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+91') %}selected{% endif %}>🇮🇳 +91</option>
+              </select>
+              <input 
+                type="tel" 
+                name="destination_phone_local" 
+                class="form-input" 
+                placeholder="1712345678"
+                pattern="[0-9]{6,15}"
+                value="{% if mode == 'edit' and listing.destination_phone_number %}{{ listing.destination_phone_number[4:] }}{% endif %}"
+              />
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="wizard-navigation">
+        <button type="button" class="btn btn-secondary" onclick="prevStep(2)">← Previous</button>
+        <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next: Verification →</button>
+      </div>
+
+      <div id="step2-message" class="form-message"></div>
+    </div>
+
+    <!-- ============================================
+         STEP 3: PHONE VERIFICATION
+         ============================================ -->
+    <div class="wizard-step" data-step="3">
+      <h2 class="step-title">Phone Verification</h2>
+      <p class="step-description">Verify your phone number to complete the listing</p>
+
+      <!-- Verification Section -->
+      <div class="verification-section">
+        <div class="verification-title">
+          <span>🔐</span>
+          <span>Verify Your Phone Number</span>
+        </div>
+        <p style="color: #92400e; margin-bottom: 12px;">
+          We'll send an OTP to your origin phone number to verify it's yours
+        </p>
+        <div class="verification-phone" id="phone-display">
+          Loading...
+        </div>
+
+        <!-- reCAPTCHA Container -->
+        <div id="recaptcha-container"></div>
+
+        <!-- Send OTP Button -->
+        <button 
+          type="button" 
+          id="send-otp-btn" 
+          class="btn btn-primary" 
+          style="width: 100%; margin-top: 16px;"
+        >
+          📱 Send OTP
+        </button>
+
+        <!-- OTP Input (Hidden initially) -->
+        <div id="otp-input-section" style="display: none; margin-top: 16px;">
+          <label class="form-label">
+            <span class="label-text">Enter 6-digit OTP *</span>
+            <input 
+              type="text" 
+              id="otp-code" 
+              class="otp-input" 
+              placeholder="000000"
+              maxlength="6"
+              pattern="[0-9]{6}"
+            />
+          </label>
+          <button 
+            type="button" 
+            id="verify-otp-btn" 
+            class="btn btn-success" 
+            style="width: 100%; margin-top: 12px;"
+          >
+            ✓ Verify OTP & Submit Listing
+          </button>
+        </div>
+      </div>
+
+      <!-- Hidden input to track phone verification -->
+      <input type="hidden" id="phone-verified" name="phone_verified" value="false" />
+
+      <!-- Navigation Buttons -->
+      <div class="wizard-navigation">
+        <button type="button" class="btn btn-secondary" onclick="prevStep(3)">← Previous</button>
+        <button type="button" class="btn btn-primary" disabled style="opacity: 0.3;">
+          Verify phone first
+        </button>
+      </div>
+
+      <div id="step3-message" class="form-message"></div>
+    </div>
+
+  </form>
+</div>
+
+<!-- Firebase Configuration -->
+<script>
+// Inject Firebase config from backend
+window.FIREBASE_CONFIG = {
+  apiKey: "{{ config.FIREBASE_API_KEY }}",
+  authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+  projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+  storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+  messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
+  appId: "{{ config.FIREBASE_APP_ID }}"
+};
+</script>
+
+<!-- Firebase SDK (CDN) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+<!-- Wizard mode configuration -->
+<script>
+  window.WIZARD_MODE = "{{ mode }}";
+  {% if mode == 'edit' %}
+  window.LISTING_ID = {{ listing.id }};
+  window.UPDATE_URL = "{{ url_for('category1.update_listing', listing_id=listing.id) }}";
+  {% else %}
+  window.CREATE_URL = "{{ url_for('category1.create_listing_submit') }}";
+  {% endif %}
+</script>
+
+<!-- Link to external wizard JavaScript -->
+<script src="{{ url_for('static', filename='js/listing_wizard.js') }}"></script>
+
+{% endblock %}
+<!-- Link to external wizard JavaScript -->
+<script src="{{ url_for('static', filename='js/listing_wizard.js') }}"></script>
+
+{% endblock %}

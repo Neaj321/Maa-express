@@ -9,14 +9,18 @@ from blueprints.auth import auth_bp
 from blueprints.main import main_bp
 from blueprints.category1 import category1_bp
 from blueprints.admin import admin_bp
+from blueprints.account import account_bp
 
 
 def create_app():
     app = Flask(__name__)
+    
     app.config.from_object(Config)
 
+    # Initialize database
     db.init_app(app)
 
+    # Initialize Firebase Admin SDK
     cred_path = app.config.get("FIREBASE_CREDENTIALS")
     if cred_path and os.path.exists(cred_path):
         cred = credentials.Certificate(cred_path)
@@ -28,15 +32,19 @@ def create_app():
         "storageBucket": app.config.get("FIREBASE_STORAGE_BUCKET"),
     })
 
+    # Inject config into templates
     @app.context_processor
     def inject_config():
         return dict(config=app.config)
 
+    # Register blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(category1_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(account_bp)
 
+   
     return app
 
 

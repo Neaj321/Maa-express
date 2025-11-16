@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+
+<div class="edit-header">
+  <h1>Edit Category 2 Listing</h1>
+  <a href="{{ url_for('account.account') }}" class="btn-back">← Back to My Account</a>
+</div>
+
+<div class="edit-card">
+  <form method="post" class="edit-form">
+    <div class="form-section">
+      <h2 class="section-title">Basic Information</h2>
+      
+      <div class="form-group">
+        <label class="form-label">Name:</label>
+        <input type="text" name="name" class="form-input" 
+               value="{{ listing.name }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description:</label>
+        <textarea name="description" class="form-textarea" rows="4">{{ listing.description or '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Gender:</label>
+        <select name="gender" class="form-input" required>
+          <option value="male" {% if listing.gender == 'male' %}selected{% endif %}>Male</option>
+          <option value="female" {% if listing.gender == 'female' %}selected{% endif %}>Female</option>
+          <option value="other" {% if listing.gender == 'other' %}selected{% endif %}>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2 class="section-title">Travel Details</h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Travel From:</label>
+          <input type="text" name="travel_from" class="form-input" 
+                 value="{{ listing.travel_from or '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Travel To:</label>
+          <input type="text" name="travel_to" class="form-input" 
+                 value="{{ listing.travel_to or '' }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Travel Date:</label>
+        <input type="date" name="travel_date" class="form-input" 
+               value="{{ listing.travel_date or '' }}">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2 class="section-title">Pricing</h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Price ($):</label>
+          <input type="number" name="price" class="form-input" 
+                 value="{{ listing.price }}" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Discount (%):</label>
+          <input type="number" name="discount_percent" class="form-input" 
+                 value="{{ listing.discount_percent }}" step="0.01" min="0" max="100">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Image URL:</label>
+        <input type="url" name="image_url" class="form-input" 
+               value="{{ listing.image_url or '' }}" placeholder="https://...">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Save Changes</button>
+      <a href="{{ url_for('account.account') }}" class="btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

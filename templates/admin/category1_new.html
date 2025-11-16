@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+<div class="admin-header">
+  <h2>Create New Category 1 Listing (Admin)</h2>
+  <nav class="admin-tabs">
+    <a href="{{ url_for('admin.dashboard') }}">Overview</a>
+    <a href="{{ url_for('admin.category1_listings') }}" class="active">Category 1</a>
+    <a href="{{ url_for('admin.category2_listings') }}">Category 2</a>
+    <a href="{{ url_for('admin.category3_products') }}">Category 3</a>
+    <a href="{{ url_for('admin.users') }}">Users</a>
+  </nav>
+</div>
+
+<div class="panel">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('admin.create_category1_listing') }}" class="admin-form">
+    <div class="form-section">
+      <h3>User Assignment</h3>
+      <label class="form-label">
+        <span>Assign to User *</span>
+        <select name="user_id" required class="form-input">
+          <option value="">-- Select User --</option>
+          {% for u in users %}
+            <option value="{{ u.id }}">{{ u.email }} ({{ u.full_name }})</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="form-label">
+        <span>Admin Status</span>
+        <select name="admin_status" class="form-input">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="form-section">
+      <h3>Listing Details</h3>
+      <label class="form-label">
+        <span>Title *</span>
+        <input type="text" name="title" required class="form-input" placeholder="e.g., Sydney to Dhaka - 10kg available">
+      </label>
+
+      <label class="form-label">
+        <span>Description</span>
+        <textarea name="description" class="form-input" rows="3" placeholder="Additional details..."></textarea>
+      </label>
+
+      <label class="form-label">
+        <span>Travel Date *</span>
+        <input type="date" name="travel_date" required class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Image URL</span>
+        <input type="url" name="image_url" class="form-input" placeholder="https://...">
+      </label>
+    </div>
+
+    <div class="form-section">
+      <h3>Origin</h3>
+      <label class="form-label">
+        <span>Origin Location *</span>
+        <input type="text" name="origin" required class="form-input" placeholder="e.g., Sydney, Australia">
+      </label>
+
+      <label class="form-label">
+        <span>Origin Airport Code *</span>
+        <input type="text" name="origin_airport" required class="form-input" placeholder="e.g., SYD" maxlength="10">
+      </label>
+
+      <label class="form-label">
+        <span>Origin Delivery Location</span>
+        <input type="text" name="origin_delivery_location" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Origin Postcode</span>
+        <input type="text" name="origin_delivery_postcode" class="form-input">
+      </label>
+    </div>
+
+    <div class="form-section">
+      <h3>Destination</h3>
+      <label class="form-label">
+        <span>Destination Location *</span>
+        <input type="text" name="destination" required class="form-input" placeholder="e.g., Dhaka, Bangladesh">
+      </label>
+
+      <label class="form-label">
+        <span>Destination Airport Code *</span>
+        <input type="text" name="destination_airport" required class="form-input" placeholder="e.g., DAC" maxlength="10">
+      </label>
+
+      <label class="form-label">
+        <span>Destination Delivery Location</span>
+        <input type="text" name="destination_delivery_location" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Destination Postcode</span>
+        <input type="text" name="destination_delivery_postcode" class="form-input">
+      </label>
+    </div>
+
+    <div class="form-section">
+      <h3>Pricing</h3>
+      <label class="form-label">
+        <span>Price (AUD) *</span>
+        <input type="number" name="price" step="0.01" min="0" required class="form-input" placeholder="50.00">
+      </label>
+
+      <label class="form-label">
+        <span>Discount Percent</span>
+        <input type="number" name="discount_percent" step="0.01" min="0" max="100" class="form-input" placeholder="0">
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Create Listing</button>
+      <a href="{{ url_for('admin.category1_listings') }}" class="btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<style>
+.form-section { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb; }
+.form-section:last-of-type { border-bottom: none; }
+.form-section h3 { margin: 0 0 12px; font-size: 1.1rem; color: #374151; }
+.form-label { display: block; margin-bottom: 12px; }
+.form-label span { display: block; margin-bottom: 4px; font-weight: 600; color: #4b5563; }
+.form-input { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.95rem; }
+.form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.form-actions { margin-top: 24px; display: flex; gap: 12px; }
+.btn-primary { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+.btn-primary:hover { background: #2563eb; }
+.btn-secondary { background: #f3f4f6; color: #374151; padding: 10px 20px; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none; display: inline-block; }
+.btn-secondary:hover { background: #e5e7eb; }
+.alert { padding: 12px; border-radius: 6px; margin-bottom: 16px; }
+.alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+</style>
+{% endblock %}

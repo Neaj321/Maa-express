@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create Listing – Category 1</h2>
+
+<form method="POST">
+  <label>Title
+    <input type="text" name="title" required>
+  </label><br>
+
+  <label>Description
+    <textarea name="description"></textarea>
+  </label><br>
+
+  <label>Origin
+    <input type="text" name="origin" required>
+  </label><br>
+
+  <label>Origin Airport Code
+    <input type="text" name="origin_airport" placeholder="SYD" required>
+  </label><br>
+
+  <label>Origin Delivery Location
+    <input type="text" name="origin_delivery_location">
+  </label><br>
+
+  <label>Origin Postcode
+    <input type="text" name="origin_delivery_postcode">
+  </label><br>
+
+  <label>Destination
+    <input type="text" name="destination" required>
+  </label><br>
+
+  <label>Destination Airport Code
+    <input type="text" name="destination_airport" placeholder="MEL" required>
+  </label><br>
+
+  <label>Destination Delivery Location
+    <input type="text" name="destination_delivery_location">
+  </label><br>
+
+  <label>Destination Postcode
+    <input type="text" name="destination_delivery_postcode">
+  </label><br>
+
+  <label>Travel Date
+    <input type="date" name="travel_date" required>
+  </label><br>
+
+  <label>Price
+    <input type="number" name="price" step="0.01" required>
+  </label><br>
+
+  <label>Discount %
+    <input type="number" name="discount_percent" step="0.01" value="0">
+  </label><br>
+
+  <label>Image URL
+    <input type="text" name="image_url">
+  </label><br>
+
+  <button type="submit">Create Listing</button>
+</form>
+{% endblock %}

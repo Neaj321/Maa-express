@@ -1,14 +1,183 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>My Dashboard</h2>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 
-{% if current_user %}
-<p>Welcome, {{ current_user.first_name }} {{ current_user.last_name }}</p>
-<p>Email: {{ current_user.email }}</p>
-<p>Phone: {{ current_user.phone_country_code }} {{ current_user.phone_number }}</p>
+<div class="admin-header">
+  <h2>Admin Dashboard</h2>
+  <nav class="admin-tabs">
+    <a href="{{ url_for('admin.dashboard') }}" class="active">Overview</a>
+    <a href="{{ url_for('admin.category1_listings') }}">Category 1</a>
+    <a href="{{ url_for('admin.category2_listings') }}">Category 2</a>
+    <a href="{{ url_for('admin.category3_products') }}">Category 3</a>
+    <a href="{{ url_for('admin.users') }}">Users</a>
+    <a href="{{ url_for('admin.analytics') }}">Analytics</a>
+    <a href="{{ url_for('admin.settings') }}">Settings</a>
+  </nav>
+</div>
 
-<p><a href="{{ url_for('category1.new_listing') }}">Create new In-flight luggage listing</a></p>
-{% else %}
-<p>Please login to see your dashboard.</p>
-{% endif %}
+<div class="cards-grid">
+  <div class="stat-card blue">
+    <div class="icon">👥</div>
+    <div class="meta">
+      <div class="label">Total Users</div>
+      <div class="value">{{ total_users }}</div>
+    </div>
+  </div>
+
+  <div class="stat-card green">
+    <div class="icon">✅</div>
+    <div class="meta">
+      <div class="label">Active Users</div>
+      <div class="value">{{ active_users }}</div>
+    </div>
+  </div>
+
+  <div class="stat-card purple">
+    <div class="icon">🛄</div>
+    <div class="meta">
+      <div class="label">Cat 1 Listings</div>
+      <div class="value">{{ cat1_total }} ({{ cat1_pending }} pending)</div>
+    </div>
+  </div>
+
+  <div class="stat-card orange">
+    <div class="icon">🧭</div>
+    <div class="meta">
+      <div class="label">Cat 2 Listings</div>
+      <div class="value">{{ cat2_total }} ({{ cat2_pending }} pending)</div>
+    </div>
+  </div>
+
+  <div class="stat-card pink">
+    <div class="icon">🛍️</div>
+    <div class="meta">
+      <div class="label">Cat 3 Products</div>
+      <div class="value">{{ cat3_total }} ({{ cat3_pending }} pending)</div>
+    </div>
+  </div>
+
+  <div class="stat-card teal">
+    <div class="icon">📊</div>
+    <div class="meta">
+      <div class="label">Site Visits</div>
+      <div class="value">{{ total_visits }} total • {{ today_visits }} today</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel-grid">
+  <section class="panel">
+    <h3>Pending Approvals – Category 1</h3>
+    {% if pending_cat1 %}
+    <table class="listing">
+      <tr><th>ID</th><th>Title</th><th>Route</th><th>Date</th><th>Price</th><th>Action</th></tr>
+      {% for l in pending_cat1 %}
+      <tr>
+        <td>{{ l.id }}</td>
+        <td>{{ l.title }}</td>
+        <td>{{ l.origin }} → {{ l.destination }}</td>
+        <td>{{ l.travel_date }}</td>
+        <td>${{ "%.2f"|format(l.final_price) }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.update_category1_status', listing_id=l.id) }}">
+            <select name="status" required>
+              <option value="">--set--</option>
+              <option value="approved">Approve</option>
+              <option value="rejected">Reject</option>
+            </select>
+            <button>Save</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No pending items.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h3>Pending Approvals – Category 2</h3>
+    {% if pending_cat2 %}
+    <table class="listing">
+      <tr><th>ID</th><th>Name</th><th>Travel</th><th>Action</th></tr>
+      {% for l in pending_cat2 %}
+      <tr>
+        <td>{{ l.id }}</td>
+        <td>{{ l.name }}</td>
+        <td>{{ l.travel_from or 'N/A' }} → {{ l.travel_to or 'N/A' }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.update_category2_status', listing_id=l.id) }}">
+            <select name="status" required>
+              <option value="">--set--</option>
+              <option value="approved">Approve</option>
+              <option value="rejected">Reject</option>
+            </select>
+            <button>Save</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No pending items.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h3>Pending Approvals – Category 3</h3>
+    {% if pending_cat3 %}
+    <table class="listing">
+      <tr><th>ID</th><th>Product</th><th>Price</th><th>Action</th></tr>
+      {% for p in pending_cat3 %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.product_name }}</td>
+        <td>${{ "%.2f"|format(p.final_price) }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.update_category3_status', product_id=p.id) }}">
+            <select name="status" required>
+              <option value="">--set--</option>
+              <option value="approved">Approve</option>
+              <option value="rejected">Reject</option>
+            </select>
+            <button>Save</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No pending items.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h3>Recent Users</h3>
+    <table class="listing">
+      <tr><th>Email</th><th>Name</th><th>Created</th></tr>
+      {% for u in recent_users %}
+      <tr>
+        <td>{{ u.email }}</td>
+        <td>{{ u.full_name }}</td>
+        <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </section>
+
+  <section class="panel">
+    <h3>Top Pages (by visits)</h3>
+    {% if top_pages %}
+    <table class="listing">
+      <tr><th>URL</th><th>Visits</th></tr>
+      {% for url, cnt in top_pages %}
+      <tr><td>{{ url }}</td><td>{{ cnt }}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>No data yet.</p>
+    {% endif %}
+  </section>
+</div>
 {% endblock %}

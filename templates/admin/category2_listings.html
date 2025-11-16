@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+<div class="admin-header">
+  <h2>Category 2 Listings</h2>
+  <nav class="admin-tabs">
+    <a href="{{ url_for('admin.dashboard') }}">Overview</a>
+    <a href="{{ url_for('admin.category1_listings') }}">Category 1</a>
+    <a href="{{ url_for('admin.category2_listings') }}" class="active">Category 2</a>
+    <a href="{{ url_for('admin.category3_products') }}">Category 3</a>
+    <a href="{{ url_for('admin.users') }}">Users</a>
+    <a href="{{ url_for('admin.analytics') }}">Analytics</a>
+    <a href="{{ url_for('admin.settings') }}">Settings</a>
+  </nav>
+</div>
+
+<div class="filter">
+  <a href="{{ url_for('admin.category2_listings') }}" {% if status_filter == 'all' %}class="active"{% endif %}>All</a>
+  <a href="{{ url_for('admin.category2_listings', status='pending') }}" {% if status_filter == 'pending' %}class="active"{% endif %}>Pending</a>
+  <a href="{{ url_for('admin.category2_listings', status='approved') }}" {% if status_filter == 'approved' %}class="active"{% endif %}>Approved</a>
+  <a href="{{ url_for('admin.category2_listings', status='rejected') }}" {% if status_filter == 'rejected' %}class="active"{% endif %}>Rejected</a>
+</div>
+
+<div class="panel">
+  <table class="listing">
+    <tr><th>ID</th><th>Name</th><th>Gender</th><th>Travel</th><th>Price</th><th>Status</th><th>Action</th></tr>
+    {% for l in listings %}
+    <tr>
+      <td>{{ l.id }}</td>
+      <td>{{ l.name }}</td>
+      <td>{{ l.gender }}</td>
+      <td>{{ l.travel_from or 'N/A' }} → {{ l.travel_to or 'N/A' }}</td>
+      <td>${{ "%.2f"|format(l.final_price) }}</td>
+      <td><span class="badge badge-{{ l.admin_status }}">{{ l.admin_status }}</span></td>
+      <td>
+        <form method="post" action="{{ url_for('admin.update_category2_status', listing_id=l.id) }}" style="display:inline">
+          <select name="status" required>
+            <option value="">--Change--</option>
+            <option value="approved">Approve</option>
+            <option value="rejected">Reject</option>
+            <option value="pending">Pending</option>
+          </select>
+          <button>Update</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<style>
+.filter { margin-bottom: 16px; display: flex; gap: 8px; }
+.badge { padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; text-transform: capitalize; }
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-approved { background: #d1fae5; color: #065f46; }
+.badge-rejected { background: #fee2e2; color: #991b1b; }
+</style>
+{% endblock %}

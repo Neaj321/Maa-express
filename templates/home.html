@@ -1,0 +1,1012 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<style>
+/* ============================================
+   SIDEBAR LAYOUT
+   ============================================ */
+.page-container {
+  display: flex;
+  min-height: calc(100vh - 80px);
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 24px;
+}
+
+/* LEFT SIDEBAR */
+.filters-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+.sidebar-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.sidebar-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.sidebar-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* FILTER SECTIONS */
+.filter-section {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.filter-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #374151;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group {
+  margin-bottom: 16px;
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
+}
+
+.filter-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.filter-input,
+.filter-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #f9fafb;
+  transition: all 0.2s;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: #1a73e8;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+.filter-input::placeholder {
+  color: #9ca3af;
+}
+
+/* CATEGORY TABS IN SIDEBAR */
+.category-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.category-tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: #4b5563;
+}
+
+.category-tab:hover {
+  border-color: #1a73e8;
+  background: #eff6ff;
+  color: #1a73e8;
+}
+
+.category-tab.active {
+  border-color: #1a73e8;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #1a73e8;
+  font-weight: 700;
+}
+
+.category-icon {
+  font-size: 1.5rem;
+}
+
+.category-label {
+  flex: 1;
+}
+
+.category-count {
+  font-size: 0.8rem;
+  background: #e5e7eb;
+  color: #6b7280;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.category-tab.active .category-count {
+  background: #1a73e8;
+  color: white;
+}
+
+/* SORT OPTIONS */
+.sort-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sort-option:hover {
+  background: #f3f4f6;
+}
+
+.sort-option input[type="radio"] {
+  cursor: pointer;
+}
+
+.sort-option label {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #374151;
+  flex: 1;
+}
+
+/* ACTION BUTTONS */
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.btn-apply-filters {
+  flex: 1;
+  padding: 12px;
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-apply-filters:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26, 115, 232, 0.3);
+}
+
+.btn-reset-filters {
+  padding: 12px;
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn-reset-filters:hover {
+  background: #e5e7eb;
+}
+
+/* RIGHT CONTENT AREA */
+.listings-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.content-header {
+  margin-bottom: 24px;
+}
+
+.content-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.content-subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.results-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.results-count {
+  font-size: 0.9rem;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+/* LISTINGS GRID */
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+/* LISTING CARDS */
+.listing-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s;
+  border: 1px solid #e5e7eb;
+}
+
+.listing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.card-image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #e5e7eb 0%, #f3f4f6 100%);
+  font-size: 4rem;
+  color: #9ca3af;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.gender-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.badge-male {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-female {
+  background: #fce7f3;
+  color: #9f1239;
+}
+
+.badge-other {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.stock-badge {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.out-of-stock {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.low-stock {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  color: #4b5563;
+}
+
+.route-from,
+.route-to {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.route-arrow {
+  color: #1a73e8;
+  font-weight: 700;
+}
+
+.product-origin {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.listing-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.price-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.price-original {
+  color: #9ca3af;
+  text-decoration: line-through;
+  font-size: 0.95rem;
+}
+
+.price-final {
+  color: #1a73e8;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.btn-card {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.btn-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+}
+
+.btn-card:disabled,
+.btn-card[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-icon {
+  font-size: 5rem;
+  opacity: 0.3;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  color: #374151;
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+}
+
+.empty-state p {
+  color: #9ca3af;
+  font-size: 1rem;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1200px) {
+  .listings-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .page-container {
+    flex-direction: column;
+  }
+
+  .filters-sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  .listings-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .filters-sidebar {
+    padding: 16px;
+  }
+
+  .listings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-overlay">
+    <h1 class="hero-title">Welcome to Maa Express</h1>
+    <p class="hero-subtitle">Luggage Space • Travel Companions • Authentic Products</p>
+  </div>
+</section>
+
+<!-- Main Container with Sidebar + Content -->
+<div class="page-container">
+  
+  <!-- ============================================
+       LEFT SIDEBAR: FILTERS & SEARCH
+       ============================================ -->
+  <aside class="filters-sidebar">
+    <div class="sidebar-header">
+      <h2 class="sidebar-title">🔍 Find Listings</h2>
+      <p class="sidebar-subtitle">Filter and search across all categories</p>
+    </div>
+
+    <form action="{{ url_for('main.index') }}" method="GET" id="filter-form">
+      
+      <!-- CATEGORY SELECTOR -->
+      <div class="filter-section">
+        <h3 class="filter-section-title">📂 Category</h3>
+        <div class="category-selector">
+          <label class="category-tab {% if request.args.get('category', 'category1') == 'category1' %}active{% endif %}">
+            <input type="radio" name="category" value="category1" {% if request.args.get('category', 'category1') == 'category1' %}checked{% endif %} style="display:none;" onchange="this.form.submit()">
+            <span class="category-icon">✈️</span>
+            <span class="category-label">Luggage Space</span>
+            <span class="category-count">{{ category1_listings|length }}</span>
+          </label>
+
+          <label class="category-tab {% if request.args.get('category') == 'category2' %}active{% endif %}">
+            <input type="radio" name="category" value="category2" {% if request.args.get('category') == 'category2' %}checked{% endif %} style="display:none;" onchange="this.form.submit()">
+            <span class="category-icon">🧳</span>
+            <span class="category-label">Travel Companions</span>
+            <span class="category-count">{{ category2_listings|length }}</span>
+          </label>
+
+          <label class="category-tab {% if request.args.get('category') == 'category3' %}active{% endif %}">
+            <input type="radio" name="category" value="category3" {% if request.args.get('category') == 'category3' %}checked{% endif %} style="display:none;" onchange="this.form.submit()">
+            <span class="category-icon">🛍️</span>
+            <span class="category-label">Authentic Products</span>
+            <span class="category-count">{{ category3_products|length }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- GLOBAL SEARCH -->
+      <div class="filter-section">
+        <h3 class="filter-section-title">🔎 Search</h3>
+        <div class="filter-group">
+          <label class="filter-label">Keyword</label>
+          <input 
+            type="text" 
+            name="q" 
+            class="filter-input" 
+            placeholder="Search listings..."
+            value="{{ request.args.get('q', '') }}"
+          />
+        </div>
+      </div>
+
+      <!-- CATEGORY 1 FILTERS (Luggage Space) -->
+      {% if request.args.get('category', 'category1') == 'category1' %}
+      <div class="filter-section">
+        <h3 class="filter-section-title">✈️ Flight Details</h3>
+        
+        <div class="filter-group">
+          <label class="filter-label">Origin Airport</label>
+          <input 
+            type="text" 
+            name="origin_airport" 
+            class="filter-input" 
+            placeholder="e.g., SYD"
+            value="{{ request.args.get('origin_airport', '') }}"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Destination Airport</label>
+          <input 
+            type="text" 
+            name="destination_airport" 
+            class="filter-input" 
+            placeholder="e.g., DAC"
+            value="{{ request.args.get('destination_airport', '') }}"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Date From</label>
+          <input 
+            type="date" 
+            name="date_from" 
+            class="filter-input"
+            value="{{ request.args.get('date_from', '') }}"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Date To</label>
+          <input 
+            type="date" 
+            name="date_to" 
+            class="filter-input"
+            value="{{ request.args.get('date_to', '') }}"
+          />
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- CATEGORY 2 FILTERS (Travel Companions) -->
+      {% if request.args.get('category') == 'category2' %}
+      <div class="filter-section">
+        <h3 class="filter-section-title">🧳 Companion Details</h3>
+        
+        <div class="filter-group">
+          <label class="filter-label">Gender</label>
+          <select name="gender" class="filter-select">
+            <option value="">Any</option>
+            <option value="male" {% if request.args.get('gender') == 'male' %}selected{% endif %}>Male</option>
+            <option value="female" {% if request.args.get('gender') == 'female' %}selected{% endif %}>Female</option>
+            <option value="other" {% if request.args.get('gender') == 'other' %}selected{% endif %}>Other</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Travel From</label>
+          <input 
+            type="text" 
+            name="travel_from" 
+            class="filter-input" 
+            placeholder="e.g., Sydney"
+            value="{{ request.args.get('travel_from', '') }}"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Travel To</label>
+          <input 
+            type="text" 
+            name="travel_to" 
+            class="filter-input" 
+            placeholder="e.g., Dhaka"
+            value="{{ request.args.get('travel_to', '') }}"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Travel Date</label>
+          <input 
+            type="date" 
+            name="travel_date" 
+            class="filter-input"
+            value="{{ request.args.get('travel_date', '') }}"
+          />
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- CATEGORY 3 FILTERS (Products) -->
+      {% if request.args.get('category') == 'category3' %}
+      <div class="filter-section">
+        <h3 class="filter-section-title">🛍️ Product Details</h3>
+        
+        <div class="filter-group">
+          <label class="filter-label">Product Name</label>
+          <input 
+            type="text" 
+            name="product_name" 
+            class="filter-input" 
+            placeholder="Search products..."
+            value="{{ request.args.get('product_name', '') }}"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Country of Origin</label>
+          <input 
+            type="text" 
+            name="origin_country" 
+            class="filter-input" 
+            placeholder="e.g., Japan"
+            value="{{ request.args.get('origin_country', '') }}"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Stock Availability</label>
+          <select name="in_stock" class="filter-select">
+            <option value="">All Products</option>
+            <option value="yes" {% if request.args.get('in_stock') == 'yes' %}selected{% endif %}>In Stock Only</option>
+          </select>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- PRICE FILTERS (ALL CATEGORIES) -->
+      <div class="filter-section">
+        <h3 class="filter-section-title">💰 Price Range</h3>
+        
+        <div class="filter-group">
+          <label class="filter-label">Max Price (AUD)</label>
+          <input 
+            type="number" 
+            name="max_price" 
+            class="filter-input" 
+            placeholder="e.g., 200"
+            value="{{ request.args.get('max_price', '') }}"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Min Discount (%)</label>
+          <input 
+            type="number" 
+            name="min_discount" 
+            class="filter-input" 
+            placeholder="e.g., 10"
+            value="{{ request.args.get('min_discount', '') }}"
+          />
+        </div>
+      </div>
+
+      <!-- SORT OPTIONS -->
+      <div class="filter-section">
+        <h3 class="filter-section-title">🔄 Sort By</h3>
+        <div class="sort-options">
+          <label class="sort-option">
+            <input type="radio" name="sort" value="newest" {% if not request.args.get('sort') or request.args.get('sort') == 'newest' %}checked{% endif %}>
+            <span>Newest First</span>
+          </label>
+          <label class="sort-option">
+            <input type="radio" name="sort" value="price_low" {% if request.args.get('sort') == 'price_low' %}checked{% endif %}>
+            <span>Price: Low to High</span>
+          </label>
+          <label class="sort-option">
+            <input type="radio" name="sort" value="price_high" {% if request.args.get('sort') == 'price_high' %}checked{% endif %}>
+            <span>Price: High to Low</span>
+          </label>
+          <label class="sort-option">
+            <input type="radio" name="sort" value="discount" {% if request.args.get('sort') == 'discount' %}checked{% endif %}>
+            <span>Highest Discount</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="filter-actions">
+        <button type="submit" class="btn-apply-filters">Apply Filters</button>
+        <a href="{{ url_for('main.index') }}" class="btn-reset-filters">Reset</a>
+      </div>
+
+    </form>
+  </aside>
+
+  <!-- ============================================
+       RIGHT CONTENT AREA: LISTINGS
+       ============================================ -->
+  <main class="listings-content">
+    
+    <!-- Content Header -->
+    <div class="content-header">
+      {% if request.args.get('category', 'category1') == 'category1' %}
+        <h1 class="content-title">✈️ Luggage Space Listings</h1>
+        <p class="content-subtitle">Browse travelers offering luggage capacity</p>
+      {% elif request.args.get('category') == 'category2' %}
+        <h1 class="content-title">🧳 Travel Companions</h1>
+        <p class="content-subtitle">Find verified travel companions for your journey</p>
+      {% elif request.args.get('category') == 'category3' %}
+        <h1 class="content-title">🛍️ Authentic Products</h1>
+        <p class="content-subtitle">Verified authentic products from around the world</p>
+      {% endif %}
+    </div>
+
+    <!-- Results Info -->
+    <div class="results-info">
+      <span class="results-count">
+        {% if request.args.get('category', 'category1') == 'category1' %}
+          Showing {{ category1_listings|length }} listings
+        {% elif request.args.get('category') == 'category2' %}
+          Showing {{ category2_listings|length }} companions
+        {% elif request.args.get('category') == 'category3' %}
+          Showing {{ category3_products|length }} products
+        {% endif %}
+      </span>
+    </div>
+
+    <!-- CATEGORY 1 LISTINGS -->
+    {% if request.args.get('category', 'category1') == 'category1' %}
+    <div class="listings-grid">
+      {% for listing in category1_listings %}
+      <div class="listing-card">
+        <div class="card-image">
+          {% if listing.passport_photo_url %}
+          <img src="{{ listing.passport_photo_url }}" alt="{{ listing.title }}" />
+          {% else %}
+          <div class="placeholder-image">✈️</div>
+          {% endif %}
+          {% if listing.discount_percent > 0 %}
+          <span class="discount-badge">-{{ "%.0f"|format(listing.discount_percent) }}%</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">{{ listing.title }}</h3>
+          <div class="route-info">
+            <span class="route-from">{{ listing.origin_airport }}</span>
+            <span class="route-arrow">→</span>
+            <span class="route-to">{{ listing.destination_airport }}</span>
+          </div>
+          <div class="listing-meta">
+            <span class="meta-item">📅 {{ listing.travel_date.strftime('%d %b %Y') }}</span>
+            {% if listing.total_weight %}
+            <span class="meta-item">⚖️ {{ listing.total_weight }}kg</span>
+            {% endif %}
+          </div>
+          <div class="price-section">
+            {% if listing.base_price and listing.discount_percent > 0 %}
+            <span class="price-original">{{ listing.currency }} ${{ "%.2f"|format(listing.base_price) }}</span>
+            {% endif %}
+            <span class="price-final">{{ listing.currency }} ${{ "%.2f"|format(listing.final_price or listing.base_price or 0) }}</span>
+          </div>
+          <a href="{{ url_for('category1.detail', listing_id=listing.id) }}" class="btn-card">View Details →</a>
+        </div>
+      </div>
+      {% endfor %}
+      
+      {% if not category1_listings %}
+      <div class="empty-state">
+        <div class="empty-icon">✈️</div>
+        <h3>No Listings Found</h3>
+        <p>Try adjusting your filters</p>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- CATEGORY 2 LISTINGS -->
+    {% if request.args.get('category') == 'category2' %}
+    <div class="listings-grid">
+      {% for listing in category2_listings %}
+      <div class="listing-card">
+        <div class="card-image">
+          {% if listing.image_url %}
+          <img src="{{ listing.image_url }}" alt="{{ listing.name }}" />
+          {% else %}
+          <div class="placeholder-image">👤</div>
+          {% endif %}
+          {% if listing.discount_percent > 0 %}
+          <span class="discount-badge">-{{ "%.0f"|format(listing.discount_percent) }}%</span>
+          {% endif %}
+          <span class="gender-badge badge-{{ listing.gender }}">{{ listing.gender|capitalize }}</span>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">{{ listing.name }}</h3>
+          {% if listing.travel_from and listing.travel_to %}
+          <div class="route-info">
+            <span class="route-from">{{ listing.travel_from }}</span>
+            <span class="route-arrow">→</span>
+            <span class="route-to">{{ listing.travel_to }}</span>
+          </div>
+          {% endif %}
+          <div class="listing-meta">
+            {% if listing.travel_date %}
+            <span class="meta-item">📅 {{ listing.travel_date.strftime('%d %b %Y') }}</span>
+            {% endif %}
+          </div>
+          <div class="price-section">
+            {% if listing.price and listing.discount_percent > 0 %}
+            <span class="price-original">AUD ${{ "%.2f"|format(listing.price) }}</span>
+            {% endif %}
+            <span class="price-final">AUD ${{ "%.2f"|format(listing.final_price) }}</span>
+          </div>
+          <a href="#" class="btn-card">View Profile →</a>
+        </div>
+      </div>
+      {% endfor %}
+      
+      {% if not category2_listings %}
+      <div class="empty-state">
+        <div class="empty-icon">🧳</div>
+        <h3>No Companions Found</h3>
+        <p>Try adjusting your filters</p>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- CATEGORY 3 PRODUCTS -->
+    {% if request.args.get('category') == 'category3' %}
+    <div class="listings-grid">
+      {% for product in category3_products %}
+      <div class="listing-card">
+        <div class="card-image">
+          {% if product.image_url %}
+          <img src="{{ product.image_url }}" alt="{{ product.product_name }}" />
+          {% else %}
+          <div class="placeholder-image">📦</div>
+          {% endif %}
+          {% if product.discount_percent > 0 %}
+          <span class="discount-badge">-{{ "%.0f"|format(product.discount_percent) }}%</span>
+          {% endif %}
+          {% if product.stock <= 0 %}
+          <span class="stock-badge out-of-stock">Out of Stock</span>
+          {% elif product.stock <= 3 %}
+          <span class="stock-badge low-stock">Only {{ product.stock }} left</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">{{ product.product_name }}</h3>
+          {% if product.product_origin_country %}
+          <div class="product-origin">🌍 {{ product.product_origin_country }}</div>
+          {% endif %}
+          <div class="listing-meta">
+            <span class="meta-item">📦 Stock: {{ product.stock }}</span>
+          </div>
+          <div class="price-section">
+            {% if product.price and product.discount_percent > 0 %}
+            <span class="price-original">AUD ${{ "%.2f"|format(product.price) }}</span>
+            {% endif %}
+            <span class="price-final">AUD ${{ "%.2f"|format(product.final_price) }}</span>
+          </div>
+          <a href="#" class="btn-card" {% if product.stock <= 0 %}style="opacity:0.5;pointer-events:none;"{% endif %}>
+            {% if product.stock > 0 %}View Details →{% else %}Out of Stock{% endif %}
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+      
+      {% if not category3_products %}
+      <div class="empty-state">
+        <div class="empty-icon">🛍️</div>
+        <h3>No Products Found</h3>
+        <p>Try adjusting your filters</p>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </main>
+
+</div>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="cta-content">
+    <h2>Ready to Start?</h2>
+    <p>Join thousands of travelers on Maa Express</p>
+    <div class="cta-buttons">
+      {% if not session.user_id %}
+      <a href="{{ url_for('auth.register_page') }}" class="btn-cta-primary">Sign Up Free</a>
+      <a href="{{ url_for('auth.login_page') }}" class="btn-cta-secondary">Log In</a>
+      {% else %}
+      <!-- ✅ FIXED: Changed from 'category1.new_listing' to 'category1.create_listing' -->
+      <a href="{{ url_for('category1.create_listing') }}" class="btn-cta-primary">Create Listing</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

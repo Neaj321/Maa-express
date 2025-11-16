@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+
+<!-- Page Header -->
+<div class="account-header">
+  <div class="account-header-content">
+    <h1>My Account</h1>
+    <p class="account-subtitle">Welcome back, {{ user.full_name or user.email }}!</p>
+  </div>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Account Tabs -->
+<div class="account-tabs">
+  <button class="tab-btn active" data-tab="my-listings">
+    <span class="tab-icon">📋</span>
+    <span class="tab-text">My Listings</span>
+  </button>
+  <button class="tab-btn" data-tab="purchases">
+    <span class="tab-icon">🛒</span>
+    <span class="tab-text">My Purchases</span>
+  </button>
+  <button class="tab-btn" data-tab="payout">
+    <span class="tab-icon">💳</span>
+    <span class="tab-text">Payout Details</span>
+  </button>
+  <button class="tab-btn" data-tab="profile">
+    <span class="tab-icon">👤</span>
+    <span class="tab-text">Profile</span>
+  </button>
+</div>
+
+<!-- Tab Content Container -->
+<div class="tab-content-wrapper">
+
+  <!-- ============================================
+       MY LISTINGS TAB
+       ============================================ -->
+  <div class="tab-content active" id="my-listings">
+    <div class="section-card">
+      <h2 class="section-title">
+        <span class="title-icon">🛄</span>
+        Category 1 - Luggage Space
+      </h2>
+      
+      {% if cat1_listings %}
+        <div class="listings-grid">
+          {% for listing in cat1_listings %}
+            <div class="listing-card">
+              {% if listing.image_url %}
+                <img src="{{ listing.image_url }}" alt="{{ listing.title }}" class="listing-image">
+              {% else %}
+                <div class="listing-image-placeholder">No Image</div>
+              {% endif %}
+              
+              <div class="listing-body">
+                <h3 class="listing-title">{{ listing.title }}</h3>
+                
+                <div class="listing-route">
+                  <span class="route-from">{{ listing.origin }}</span>
+                  <span class="route-arrow">→</span>
+                  <span class="route-to">{{ listing.destination }}</span>
+                </div>
+                
+                <div class="listing-meta">
+                  <span class="meta-item">📅 {{ listing.travel_date }}</span>
+                  <span class="meta-item status-{{ listing.admin_status }}">
+                    {{ listing.admin_status|capitalize }}
+                  </span>
+                </div>
+                
+                <div class="listing-price">
+                  ${{ "%.2f"|format(listing.final_price) }}
+                </div>
+                
+                <div class="listing-actions">
+                  <a href="{{ url_for('account.edit_category1', listing_id=listing.id) }}" class="btn-edit">
+                    Edit
+                  </a>
+                  <form method="post" action="{{ url_for('account.delete_category1', listing_id=listing.id) }}" 
+                        onsubmit="return confirm('Are you sure you want to delete this listing?');">
+                    <button type="submit" class="btn-delete">Delete</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-state">No Category 1 listings yet. <a href="{{ url_for('category1.create_listing') }}">Create one now!</a></p>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">
+        <span class="title-icon">🧭</span>
+        Category 2 - Travel Companions
+      </h2>
+      
+      {% if cat2_listings %}
+        <div class="listings-grid">
+          {% for listing in cat2_listings %}
+            <div class="listing-card">
+              {% if listing.image_url %}
+                <img src="{{ listing.image_url }}" alt="{{ listing.name }}" class="listing-image">
+              {% else %}
+                <div class="listing-image-placeholder">No Image</div>
+              {% endif %}
+              
+              <div class="listing-body">
+                <h3 class="listing-title">{{ listing.name }}</h3>
+                
+                <div class="listing-route">
+                  <span class="route-from">{{ listing.travel_from or 'N/A' }}</span>
+                  <span class="route-arrow">→</span>
+                  <span class="route-to">{{ listing.travel_to or 'N/A' }}</span>
+                </div>
+                
+                <div class="listing-meta">
+                  <span class="meta-item">📅 {{ listing.travel_date or 'N/A' }}</span>
+                  <span class="meta-item">{{ listing.gender|capitalize }}</span>
+                  <span class="meta-item status-{{ listing.admin_status }}">
+                    {{ listing.admin_status|capitalize }}
+                  </span>
+                </div>
+                
+                <div class="listing-price">
+                  ${{ "%.2f"|format(listing.final_price) }}
+                </div>
+                
+                <div class="listing-actions">
+                  <a href="{{ url_for('account.edit_category2', listing_id=listing.id) }}" class="btn-edit">
+                    Edit
+                  </a>
+                  <form method="post" action="{{ url_for('account.delete_category2', listing_id=listing.id) }}" 
+                        onsubmit="return confirm('Are you sure you want to delete this listing?');">
+                    <button type="submit" class="btn-delete">Delete</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-state">No Category 2 listings yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">
+        <span class="title-icon">🛍️</span>
+        Category 3 - Authentic Products
+      </h2>
+      
+      {% if cat3_products %}
+        <div class="listings-grid">
+          {% for product in cat3_products %}
+            <div class="listing-card">
+              {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.product_name }}" class="listing-image">
+              {% else %}
+                <div class="listing-image-placeholder">No Image</div>
+              {% endif %}
+              
+              <div class="listing-body">
+                <h3 class="listing-title">{{ product.product_name }}</h3>
+                
+                <div class="listing-meta">
+                  <span class="meta-item">🌍 {{ product.product_origin_country or 'N/A' }}</span>
+                  <span class="meta-item">📦 Stock: {{ product.stock }}</span>
+                  <span class="meta-item status-{{ product.admin_status }}">
+                    {{ product.admin_status|capitalize }}
+                  </span>
+                </div>
+                
+                <div class="listing-price">
+                  ${{ "%.2f"|format(product.final_price) }}
+                </div>
+                
+                <div class="listing-actions">
+                  <a href="{{ url_for('account.edit_category3', product_id=product.id) }}" class="btn-edit">
+                    Edit
+                  </a>
+                  <form method="post" action="{{ url_for('account.delete_category3', product_id=product.id) }}" 
+                        onsubmit="return confirm('Are you sure you want to delete this product?');">
+                    <button type="submit" class="btn-delete">Delete</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-state">No Category 3 products yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ============================================
+       PURCHASES TAB
+       ============================================ -->
+  <div class="tab-content" id="purchases">
+    <div class="section-card">
+      <h2 class="section-title">
+        <span class="title-icon">🛄</span>
+        Category 1 Purchases
+      </h2>
+      
+      {% if cat1_purchases %}
+        <table class="purchases-table">
+          <thead>
+            <tr>
+              <th>Listing</th>
+              <th>Receiver</th>
+              <th>Delivery Location</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for purchase in cat1_purchases %}
+              <tr>
+                <td>
+                  {% if purchase.listing %}
+                    {{ purchase.listing.title }}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+                <td>{{ purchase.receiver_fullname }}</td>
+                <td>{{ purchase.delivery_location }}, {{ purchase.delivery_postcode }}</td>
+                <td>{{ purchase.created_at.strftime('%Y-%m-%d') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="empty-state">No Category 1 purchases yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">
+        <span class="title-icon">🧭</span>
+        Category 2 Purchases
+      </h2>
+      
+      {% if cat2_purchases %}
+        <table class="purchases-table">
+          <thead>
+            <tr>
+              <th>Listing</th>
+              <th>Contact Name</th>
+              <th>Email</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for purchase in cat2_purchases %}
+              <tr>
+                <td>
+                  {% if purchase.listing %}
+                    {{ purchase.listing.name }}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+                <td>{{ purchase.full_name }}</td>
+                <td>{{ purchase.email }}</td>
+                <td>{{ purchase.created_at.strftime('%Y-%m-%d') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="empty-state">No Category 2 purchases yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">
+        <span class="title-icon">🛍️</span>
+        Category 3 Orders
+      </h2>
+      
+      {% if cat3_purchases %}
+        <table class="purchases-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in cat3_purchases %}
+              <tr>
+                <td>
+                  {% if order.product %}
+                    {{ order.product.product_name }}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+                <td>{{ order.quantity }}</td>
+                <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                <td><span class="status-{{ order.status }}">{{ order.status|capitalize }}</span></td>
+                <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="empty-state">No Category 3 orders yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ============================================
+       PAYOUT DETAILS TAB
+       ============================================ -->
+  <div class="tab-content" id="payout">
+    <div class="section-card">
+      <h2 class="section-title">
+        <span class="title-icon">💳</span>
+        Payout Method
+      </h2>
+      
+      <form method="post" action="{{ url_for('account.update_payout') }}" class="payout-form">
+        <div class="form-group">
+          <label class="form-label">Select Payout Method:</label>
+          <select name="payout_method_type" id="payout-method-select" class="form-input" required>
+            <option value="none" {% if user.payout_method_type == 'none' %}selected{% endif %}>None (Set Later)</option>
+            <option value="bank" {% if user.payout_method_type == 'bank' %}selected{% endif %}>Bank Account</option>
+            <option value="card" {% if user.payout_method_type == 'card' %}selected{% endif %}>Debit Card</option>
+            <option value="mobile_banking" {% if user.payout_method_type == 'mobile_banking' %}selected{% endif %}>Mobile Banking</option>
+            <option value="payid" {% if user.payout_method_type == 'payid' %}selected{% endif %}>PayID</option>
+          </select>
+        </div>
+
+        <!-- Bank Account Fields -->
+        <div id="bank-fields" class="payout-method-fields" style="display: none;">
+          <h3 class="subsection-title">Bank Account Details</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Account Holder Name:</label>
+              <input type="text" name="bank_account_name" class="form-input" 
+                     value="{{ user.bank_account_name or '' }}" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bank Name:</label>
+              <input type="text" name="bank_name" class="form-input" 
+                     value="{{ user.bank_name or '' }}" placeholder="Commonwealth Bank">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">BSB/Routing Number:</label>
+              <input type="text" name="bank_bsb_or_routing" class="form-input" 
+                     value="{{ user.bank_bsb_or_routing or '' }}" placeholder="123-456">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Account Number:</label>
+              <input type="text" name="bank_account_number" class="form-input" 
+                     value="{{ user.bank_account_number or '' }}" placeholder="12345678">
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Fields -->
+        <div id="card-fields" class="payout-method-fields" style="display: none;">
+          <h3 class="subsection-title">Debit Card Details</h3>
+          <p class="security-note">⚠️ For security, we only store the last 4 digits</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Card Holder Name:</label>
+              <input type="text" name="card_holder_name" class="form-input" 
+                     value="{{ user.card_holder_name or '' }}" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Card Brand:</label>
+              <select name="card_brand" class="form-input">
+                <option value="">-- Select --</option>
+                <option value="Visa" {% if user.card_brand == 'Visa' %}selected{% endif %}>Visa</option>
+                <option value="Mastercard" {% if user.card_brand == 'Mastercard' %}selected{% endif %}>Mastercard</option>
+                <option value="Amex" {% if user.card_brand == 'Amex' %}selected{% endif %}>American Express</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Last 4 Digits:</label>
+              <input type="text" name="card_last4" class="form-input" 
+                     value="{{ user.card_last4 or '' }}" placeholder="1234" maxlength="4" pattern="[0-9]{4}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry Month:</label>
+              <input type="number" name="card_exp_month" class="form-input" 
+                     value="{{ user.card_exp_month or '' }}" placeholder="12" min="1" max="12">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry Year:</label>
+              <input type="number" name="card_exp_year" class="form-input" 
+                     value="{{ user.card_exp_year or '' }}" placeholder="2025" min="2024">
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Banking Fields -->
+        <div id="mobile-banking-fields" class="payout-method-fields" style="display: none;">
+          <h3 class="subsection-title">Mobile Banking Details</h3>
+          <div class="form-group">
+            <label class="form-label">Mobile Banking Number:</label>
+            <input type="text" name="mobile_banking_number" class="form-input" 
+                   value="{{ user.mobile_banking_number or '' }}" placeholder="+61 412 345 678">
+          </div>
+        </div>
+
+        <!-- PayID Fields -->
+        <div id="payid-fields" class="payout-method-fields" style="display: none;">
+          <h3 class="subsection-title">PayID Details</h3>
+          <div class="form-group">
+            <label class="form-label">PayID Identifier (Email or Phone):</label>
+            <input type="text" name="payid_identifier" class="form-input" 
+                   value="{{ user.payid_identifier or '' }}" placeholder="[email protected] or +61412345678">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Save Payout Details</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================
+       PROFILE TAB
+       ============================================ -->
+  <div class="tab-content" id="profile">
+    <div class="section-card">
+      <h2 class="section-title">
+        <span class="title-icon">👤</span>
+        Account Information
+      </h2>
+      
+      <div class="profile-info">
+        <div class="info-row">
+          <span class="info-label">Full Name:</span>
+          <span class="info-value">{{ user.full_name or 'Not set' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value">{{ user.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Phone:</span>
+          <span class="info-value">{{ user.phone or 'Not set' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Member Since:</span>
+          <span class="info-value">{{ user.created_at.strftime('%B %d, %Y') }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email Verified:</span>
+          <span class="info-value">
+            {% if user.email_verified %}
+              <span class="badge-success">✓ Verified</span>
+            {% else %}
+              <span class="badge-warning">Not Verified</span>
+            {% endif %}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Phone Verified:</span>
+          <span class="info-value">
+            {% if user.phone_verified %}
+              <span class="badge-success">✓ Verified</span>
+            {% else %}
+              <span class="badge-warning">Not Verified</span>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Remove active class from all tabs and content
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    // Add active class to clicked tab and corresponding content
+    btn.classList.add('active');
+    const tabId = btn.dataset.tab;
+    document.getElementById(tabId).classList.add('active');
+  });
+});
+
+// Payout method selector
+const payoutSelect = document.getElementById('payout-method-select');
+const bankFields = document.getElementById('bank-fields');
+const cardFields = document.getElementById('card-fields');
+const mobileBankingFields = document.getElementById('mobile-banking-fields');
+const payidFields = document.getElementById('payid-fields');
+
+function togglePayoutFields() {
+  const method = payoutSelect.value;
+  
+  // Hide all fields first
+  bankFields.style.display = 'none';
+  cardFields.style.display = 'none';
+  mobileBankingFields.style.display = 'none';
+  payidFields.style.display = 'none';
+  
+  // Show relevant fields
+  if (method === 'bank') {
+    bankFields.style.display = 'block';
+  } else if (method === 'card') {
+    cardFields.style.display = 'block';
+  } else if (method === 'mobile_banking') {
+    mobileBankingFields.style.display = 'block';
+  } else if (method === 'payid') {
+    payidFields.style.display = 'block';
+  }
+}
+
+// Initialize on page load
+togglePayoutFields();
+
+// Update on change
+payoutSelect.addEventListener('change', togglePayoutFields);
+</script>
+
+{% endblock %}

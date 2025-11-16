@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+<div class="admin-header">
+  <h2>Edit Category 1 Listing #{{ listing.id }}</h2>
+  <nav class="admin-tabs">
+    <a href="{{ url_for('admin.dashboard') }}">Overview</a>
+    <a href="{{ url_for('admin.category1_listings') }}" class="active">Category 1</a>
+    <a href="{{ url_for('admin.category2_listings') }}">Category 2</a>
+    <a href="{{ url_for('admin.category3_products') }}">Category 3</a>
+    <a href="{{ url_for('admin.users') }}">Users</a>
+  </nav>
+</div>
+
+<div class="panel">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="listing-meta">
+    <p><strong>Created:</strong> {{ listing.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p><strong>Updated:</strong> {{ listing.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p><strong>Current Owner:</strong> {{ listing.user.email }}</p>
+  </div>
+
+  <form method="POST" action="{{ url_for('admin.edit_category1_listing', listing_id=listing.id) }}" class="admin-form">
+    <div class="form-section">
+      <h3>User Assignment</h3>
+      <label class="form-label">
+        <span>Assign to User</span>
+        <select name="user_id" class="form-input">
+          {% for u in users %}
+            <option value="{{ u.id }}" {% if u.id == listing.user_id %}selected{% endif %}>
+              {{ u.email }} ({{ u.full_name }})
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="form-label">
+        <span>Admin Status</span>
+        <select name="admin_status" class="form-input">
+          <option value="pending" {% if listing.admin_status == 'pending' %}selected{% endif %}>Pending</option>
+          <option value="approved" {% if listing.admin_status == 'approved' %}selected{% endif %}>Approved</option>
+          <option value="rejected" {% if listing.admin_status == 'rejected' %}selected{% endif %}>Rejected</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="form-section">
+      <h3>Listing Details</h3>
+      <label class="form-label">
+        <span>Title</span>
+        <input type="text" name="title" value="{{ listing.title }}" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Description</span>
+        <textarea name="description" class="form-input" rows="3">{{ listing.description or '' }}</textarea>
+      </label>
+
+      <label class="form-label">
+        <span>Travel Date</span>
+        <input type="date" name="travel_date" value="{{ listing.travel_date }}" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Image URL</span>
+        <input type="url" name="image_url" value="{{ listing.image_url or '' }}" class="form-input">
+      </label>
+    </div>
+
+    <div class="form-section">
+      <h3>Origin</h3>
+      <label class="form-label">
+        <span>Origin Location</span>
+        <input type="text" name="origin" value="{{ listing.origin }}" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Origin Airport Code</span>
+        <input type="text" name="origin_airport" value="{{ listing.origin_airport }}" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Origin Delivery Location</span>
+        <input type="text" name="origin_delivery_location" value="{{ listing.origin_delivery_location or '' }}" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Origin Postcode</span>
+        <input type="text" name="origin_delivery_postcode" value="{{ listing.origin_delivery_postcode or '' }}" class="form-input">
+      </label>
+    </div>
+
+    <div class="form-section">
+      <h3>Destination</h3>
+      <label class="form-label">
+        <span>Destination Location</span>
+        <input type="text" name="destination" value="{{ listing.destination }}" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Destination Airport Code</span>
+        <input type="text" name="destination_airport" value="{{ listing.destination_airport }}" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Destination Delivery Location</span>
+        <input type="text" name="destination_delivery_location" value="{{ listing.destination_delivery_location or '' }}" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Destination Postcode</span>
+        <input type="text" name="destination_delivery_postcode" value="{{ listing.destination_delivery_postcode or '' }}" class="form-input">
+      </label>
+    </div>
+
+    <div class="form-section">
+      <h3>Pricing</h3>
+      <label class="form-label">
+        <span>Price (AUD)</span>
+        <input type="number" name="price" step="0.01" value="{{ listing.price }}" class="form-input">
+      </label>
+
+      <label class="form-label">
+        <span>Discount Percent</span>
+        <input type="number" name="discount_percent" step="0.01" value="{{ listing.discount_percent }}" class="form-input">
+      </label>
+
+      <div class="calculated-price">
+        <strong>Current Final Price:</strong> ${{ "%.2f"|format(listing.final_price) }}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Update Listing</button>
+      <a href="{{ url_for('admin.category1_listings') }}" class="btn-secondary">Cancel</a>
+      
+      <form method="POST" action="{{ url_for('admin.delete_category1_listing', listing_id=listing.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this listing?');">
+        <button type="submit" class="btn-danger">Delete Listing</button>
+      </form>
+    </div>
+  </form>
+</div>
+
+<style>
+.listing-meta { background: #f9fafb; padding: 12px; border-radius: 6px; margin-bottom: 20px; }
+.listing-meta p { margin: 4px 0; color: #6b7280; }
+.form-section { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb; }
+.form-section h3 { margin: 0 0 12px; font-size: 1.1rem; color: #374151; }
+.form-label { display: block; margin-bottom: 12px; }
+.form-label span { display: block; margin-bottom: 4px; font-weight: 600; color: #4b5563; }
+.form-input { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; }
+.calculated-price { margin-top: 12px; padding: 10px; background: #dbeafe; border-radius: 4px; color: #1e40af; }
+.form-actions { margin-top: 24px; display: flex; gap: 12px; }
+.btn-primary { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+.btn-secondary { background: #f3f4f6; color: #374151; padding: 10px 20px; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none; }
+.btn-danger { background: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-left: auto; }
+.alert { padding: 12px; border-radius: 6px; margin-bottom: 16px; }
+.alert-error { background: #fee2e2; color: #991b1b; }
+.alert-success { background: #d1fae5; color: #065f46; }
+</style>
+{% endblock %}

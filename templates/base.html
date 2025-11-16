@@ -2,41 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Maa Express</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Maa Express{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-<header>
-  <div class="logo">Maa Express</div>
-  <nav>
-    <a href="{{ url_for('main.index') }}">Home</a>
-    {% if current_user %}
-      <a href="{{ url_for('main.render_template_name', template='dashboard.html') }}">My Account</a>
-      {% if current_user.is_admin %}
-        <a href="{{ url_for('admin.dashboard') }}">Admin</a>
-      {% endif %}
-      <a href="#" id="logout-link">Logout</a>
-    {% else %}
-      <a href="{{ url_for('main.render_template_name', template='register.html') }}">Register</a>
-      <a href="{{ url_for('main.render_template_name', template='login.html') }}">Login</a>
-    {% endif %}
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('main.index') }}" class="logo">
+        <span class="logo-icon">✈️</span>
+        <span class="logo-text">Maa Express</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="{{ url_for('main.index') }}" class="nav-link">Home</a>
+        
+        {% if session.user_id %}
+          <!-- Logged in users -->
+          <a href="{{ url_for('category1.create_listing') }}" class="nav-link btn-create">
+            <span>➕</span> Create Listing
+          </a>
+          <a href="{{ url_for('account.account') }}" class="nav-link">My Account</a>
+          
+          {% if session.get('is_admin') %}
+            <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin</a>
+          {% endif %}
+          
+          <button onclick="logout()" class="nav-link btn-logout">Logout</button>
+        {% else %}
+          <!-- Not logged in -->
+          <a href="{{ url_for('auth.login_page') }}" class="nav-link">Login</a>
+          <a href="{{ url_for('auth.register_page') }}" class="nav-link btn-register">Register</a>
+        {% endif %}
+      </div>
+    </div>
   </nav>
-</header>
 
-<main>
-  {% block content %}{% endblock %}
-</main>
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages-container">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
 
-<script>
-  const logoutLink = document.getElementById("logout-link");
-  if (logoutLink) {
-    logoutLink.addEventListener("click", async (e) => {
-      e.preventDefault();
-      const res = await fetch("/api/logout", { method: "POST" });
-      if (res.ok) window.location.href = "{{ url_for('main.index') }}";
-    });
-  }
-</script>
+  <!-- Main Content -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
 
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 Maa Express. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="/page/about.html">About</a>
+        <a href="/page/terms.html">Terms</a>
+        <a href="/page/privacy.html">Privacy</a>
+        <a href="/page/contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    async function logout() {
+      try {
+        const res = await fetch("{{ url_for('auth.api_logout') }}", { method: "POST" });
+        if (res.ok) {
+          window.location.href = "{{ url_for('main.index') }}";
+        }
+      } catch (error) {
+        console.error("Logout failed:", error);
+      }
+    }
+
+    // Auto-hide flash messages after 5 seconds
+    setTimeout(() => {
+      const flashMessages = document.querySelectorAll('.flash-message');
+      flashMessages.forEach(msg => msg.style.display = 'none');
+    }, 5000);
+  </script>
+
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
