@@ -1,0 +1,819 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Documents - Maa Express{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================
+   UPLOAD DOCUMENTS PAGE STYLES
+   ============================================ */
+.upload-container {
+  max-width: 800px;
+  margin: 60px auto;
+  padding: 20px;
+}
+
+.upload-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* Header */
+.upload-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 40px;
+  text-align: center;
+}
+
+.upload-icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.upload-header h1 {
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.upload-header p {
+  margin: 0;
+  opacity: 0.95;
+  font-size: 1.1rem;
+}
+
+/* Body */
+.upload-body {
+  padding: 40px;
+}
+
+.upload-section {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 2px dashed #d1d5db;
+  transition: all 0.3s;
+}
+
+.upload-section:hover {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.file-upload-zone {
+  background: white;
+  border: 3px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.file-upload-zone:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.file-upload-zone.dragover {
+  border-color: #059669;
+  background: #d1fae5;
+  transform: scale(1.02);
+}
+
+.upload-zone-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.upload-zone-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #059669;
+  margin-bottom: 8px;
+}
+
+.upload-zone-hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.file-input {
+  display: none;
+}
+
+/* File Preview */
+.file-preview {
+  margin-top: 20px;
+  padding: 16px;
+  background: #ecfdf5;
+  border-radius: 8px;
+  border-left: 4px solid #10b981;
+  display: none;
+  animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.file-preview.active {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.preview-icon {
+  font-size: 2rem;
+}
+
+.preview-details {
+  flex: 1;
+}
+
+.preview-name {
+  font-weight: 600;
+  color: #047857;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.preview-size {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.preview-remove {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preview-remove:hover {
+  background: #fecaca;
+  transform: scale(1.05);
+}
+
+/* Upload Progress */
+.upload-progress {
+  margin-top: 16px;
+  display: none;
+}
+
+.upload-progress.active {
+  display: block;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  transition: width 0.3s;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Important Notice */
+.notice-box {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 32px;
+}
+
+.notice-title {
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notice-text {
+  color: #78350f;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Submit Button */
+.btn-submit {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-submit.loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn-submit.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Message Display */
+.message {
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-weight: 600;
+  text-align: center;
+  display: none;
+  animation: slideDown 0.3s;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.active {
+  display: block;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #dc2626;
+  border-left: 4px solid #dc2626;
+}
+
+.message.success {
+  background: #d1fae5;
+  color: #047857;
+  border-left: 4px solid #047857;
+}
+
+.message.info {
+  background: #dbeafe;
+  color: #1e40af;
+  border-left: 4px solid #1e40af;
+}
+
+/* Order Summary */
+.order-summary {
+  background: #f3f4f6;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 32px;
+}
+
+.summary-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: #1f2937;
+  text-align: right;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .upload-container {
+    padding: 10px;
+    margin: 20px auto;
+  }
+
+  .upload-header {
+    padding: 30px 20px;
+  }
+
+  .upload-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .upload-body {
+    padding: 24px 16px;
+  }
+
+  .file-upload-zone {
+    padding: 30px 16px;
+  }
+
+  .upload-zone-icon {
+    font-size: 2.5rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+  <div class="upload-card">
+    <!-- Header -->
+    <div class="upload-header">
+      <div class="upload-icon">📸</div>
+      <h1>Upload Required Documents</h1>
+      <p>Almost done! Just two more steps</p>
+    </div>
+
+    <!-- Body -->
+    <div class="upload-body">
+      <!-- Order Summary -->
+      <div class="order-summary">
+        <h3 class="summary-title">📦 Order Summary</h3>
+        <div class="summary-row">
+          <span class="summary-label">Order ID:</span>
+          <span class="summary-value">#{{ buyer_info.id }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Route:</span>
+          <span class="summary-value">{{ listing.origin }} → {{ listing.destination }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Travel Date:</span>
+          <span class="summary-value">{{ listing.travel_date.strftime('%d %b %Y') }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Weight:</span>
+          <span class="summary-value">{{ buyer_info.purchased_weight }} kg</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Total Paid:</span>
+          <span class="summary-value">{{ listing.currency }} ${{ "%.2f"|format(buyer_info.purchase_price) }}</span>
+        </div>
+      </div>
+
+      <!-- Important Notice -->
+      <div class="notice-box">
+        <div class="notice-title">
+          <span>⚠️</span>
+          <span>Important: Document Verification</span>
+        </div>
+        <p class="notice-text">
+          These documents are required to generate your handover & delivery codes. 
+          All information is securely stored and only accessible to authorized Maa Express administrators for verification purposes.
+        </p>
+      </div>
+
+      <!-- Message Display -->
+      <div id="upload-message" class="message"></div>
+
+      <!-- Upload Form -->
+      <form id="upload-form">
+        
+        <!-- Luggage/Parcel Photo (Optional) -->
+        <div class="upload-section">
+          <div class="section-title">
+            <span>📦</span>
+            <span>Luggage/Parcel Photo (Optional)</span>
+          </div>
+          <p class="section-subtitle">
+            Upload a photo of the parcel you're sending. This helps the carrier identify your luggage.
+          </p>
+
+          <label for="luggage-photo-input" class="file-upload-zone" id="luggage-photo-zone">
+            <span class="upload-zone-icon">📷</span>
+            <div class="upload-zone-text">Click to upload luggage photo</div>
+            <div class="upload-zone-hint">Max 5MB • JPG, PNG, or WEBP</div>
+          </label>
+          <input 
+            type="file" 
+            id="luggage-photo-input" 
+            class="file-input"
+            accept="image/jpeg,image/png,image/webp"
+          />
+
+          <!-- Preview -->
+          <div id="luggage-photo-preview" class="file-preview">
+            <span class="preview-icon">📸</span>
+            <div class="preview-details">
+              <div class="preview-name" id="luggage-photo-name"></div>
+              <div class="preview-size" id="luggage-photo-size"></div>
+            </div>
+            <button type="button" class="preview-remove" onclick="removeFile('luggage-photo')">
+              Remove
+            </button>
+          </div>
+
+          <!-- Progress -->
+          <div id="luggage-photo-progress" class="upload-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="luggage-photo-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-text" id="luggage-photo-progress-text">Uploading...</div>
+          </div>
+
+          <input type="hidden" id="luggage-photo-url" name="luggage_photo_url" />
+        </div>
+
+        <!-- Sender ID Document (Mandatory) -->
+        <div class="upload-section">
+          <div class="section-title">
+            <span>🆔</span>
+            <span>Sender Identity Document (Required) *</span>
+          </div>
+          <p class="section-subtitle">
+            Upload your passport, driver's license, or national ID. This verifies your identity for security purposes.
+          </p>
+
+          <label for="sender-id-input" class="file-upload-zone" id="sender-id-zone">
+            <span class="upload-zone-icon">📄</span>
+            <div class="upload-zone-text">Click to upload ID document</div>
+            <div class="upload-zone-hint">Max 5MB • JPG, PNG, WEBP, or PDF</div>
+          </label>
+          <input 
+            type="file" 
+            id="sender-id-input" 
+            class="file-input"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            required
+          />
+
+          <!-- Preview -->
+          <div id="sender-id-preview" class="file-preview">
+            <span class="preview-icon">✅</span>
+            <div class="preview-details">
+              <div class="preview-name" id="sender-id-name"></div>
+              <div class="preview-size" id="sender-id-size"></div>
+            </div>
+            <button type="button" class="preview-remove" onclick="removeFile('sender-id')">
+              Remove
+            </button>
+          </div>
+
+          <!-- Progress -->
+          <div id="sender-id-progress" class="upload-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="sender-id-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-text" id="sender-id-progress-text">Uploading...</div>
+          </div>
+
+          <input type="hidden" id="sender-id-url" name="sender_id_url" />
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-btn" class="btn-submit">
+          Complete Upload & Generate Codes
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js';
+  import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js';
+
+  // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "{{ config.FIREBASE_API_KEY }}",
+    authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+    projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+    messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
+    appId: "{{ config.FIREBASE_APP_ID }}"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+
+  // Global state
+  let uploadedFiles = {
+    luggage_photo_url: null,
+    sender_id_url: null
+  };
+
+  // Max file size (5MB)
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+  // ============================================
+  // FILE INPUT HANDLERS
+  // ============================================
+
+  document.getElementById('luggage-photo-input').addEventListener('change', (e) => {
+    handleFileSelect(e.target.files[0], 'luggage-photo');
+  });
+
+  document.getElementById('sender-id-input').addEventListener('change', (e) => {
+    handleFileSelect(e.target.files[0], 'sender-id');
+  });
+
+  // ============================================
+  // DRAG & DROP HANDLERS
+  // ============================================
+
+  ['luggage-photo-zone', 'sender-id-zone'].forEach(zoneId => {
+    const zone = document.getElementById(zoneId);
+    
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      zone.classList.add('dragover');
+    });
+
+    zone.addEventListener('dragleave', () => {
+      zone.classList.remove('dragover');
+    });
+
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      
+      const file = e.dataTransfer.files[0];
+      const type = zoneId.replace('-zone', '');
+      
+      handleFileSelect(file, type);
+    });
+  });
+
+  // ============================================
+  // FILE HANDLING
+  // ============================================
+
+  function handleFileSelect(file, type) {
+    if (!file) return;
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      showMessage(`File too large. Maximum size is 5MB.`, 'error');
+      return;
+    }
+
+    // Validate file type
+    const validTypes = type === 'sender-id' 
+      ? ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+      : ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!validTypes.includes(file.type)) {
+      showMessage(`Invalid file type. Please upload ${type === 'sender-id' ? 'JPG, PNG, WEBP, or PDF' : 'JPG, PNG, or WEBP'}.`, 'error');
+      return;
+    }
+
+    // Show preview
+    showFilePreview(file, type);
+
+    // Upload to Firebase
+    uploadToFirebase(file, type);
+  }
+
+  function showFilePreview(file, type) {
+    const preview = document.getElementById(`${type}-preview`);
+    const nameEl = document.getElementById(`${type}-name`);
+    const sizeEl = document.getElementById(`${type}-size`);
+
+    nameEl.textContent = file.name;
+    sizeEl.textContent = formatFileSize(file.size);
+    preview.classList.add('active');
+  }
+
+  window.removeFile = function(type) {
+    // Clear file input
+    const input = document.getElementById(`${type}-input`);
+    input.value = '';
+
+    // Hide preview
+    const preview = document.getElementById(`${type}-preview`);
+    preview.classList.remove('active');
+
+    // Clear hidden field
+    const urlField = document.getElementById(`${type}-url`);
+    urlField.value = '';
+
+    // Clear uploaded URL
+    const fieldName = type === 'luggage-photo' ? 'luggage_photo_url' : 'sender_id_url';
+    uploadedFiles[fieldName] = null;
+
+    // Hide progress
+    const progress = document.getElementById(`${type}-progress`);
+    progress.classList.remove('active');
+  };
+
+  function uploadToFirebase(file, type) {
+    const buyerInfoId = "{{ buyer_info.id }}";
+    const timestamp = Date.now();
+    const fileName = `${type}_${timestamp}_${file.name}`;
+    const storagePath = `category1_documents/${buyerInfoId}/${fileName}`;
+
+    const storageRef = ref(storage, storagePath);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    // Show progress
+    const progressDiv = document.getElementById(`${type}-progress`);
+    const progressFill = document.getElementById(`${type}-progress-fill`);
+    const progressText = document.getElementById(`${type}-progress-text`);
+    progressDiv.classList.add('active');
+
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        progressFill.style.width = progress + '%';
+        progressText.textContent = `Uploading: ${Math.round(progress)}%`;
+      },
+      (error) => {
+        console.error('Upload error:', error);
+        showMessage(`Upload failed: ${error.message}`, 'error');
+        progressDiv.classList.remove('active');
+      },
+      async () => {
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          
+          // Save URL
+          const urlField = document.getElementById(`${type}-url`);
+          urlField.value = downloadURL;
+
+          const fieldName = type === 'luggage-photo' ? 'luggage_photo_url' : 'sender_id_url';
+          uploadedFiles[fieldName] = downloadURL;
+
+          // Update progress
+          progressText.textContent = '✓ Upload complete!';
+          progressFill.style.background = '#10b981';
+
+          setTimeout(() => {
+            progressDiv.classList.remove('active');
+          }, 2000);
+
+          showMessage(`${type === 'luggage-photo' ? 'Luggage photo' : 'ID document'} uploaded successfully!`, 'success');
+        } catch (error) {
+          console.error('Error getting download URL:', error);
+          showMessage(`Failed to get file URL: ${error.message}`, 'error');
+        }
+      }
+    );
+  }
+
+  // ============================================
+  // FORM SUBMISSION
+  // ============================================
+
+  document.getElementById('upload-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Validate sender ID (required)
+    if (!uploadedFiles.sender_id_url) {
+      showMessage('Please upload your identity document (required)', 'error');
+      return;
+    }
+
+    // Disable button
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+
+    try {
+      const response = await fetch("{{ url_for('category1.upload_documents', buyer_info_id=buyer_info.id) }}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          luggage_photo_url: uploadedFiles.luggage_photo_url || '',
+          sender_id_url: uploadedFiles.sender_id_url
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      showMessage(data.message || 'Documents uploaded successfully!', 'success');
+
+      // Redirect to success page
+      setTimeout(() => {
+        window.location.href = data.redirect_url;
+      }, 1500);
+
+    } catch (error) {
+      console.error('Submission error:', error);
+      showMessage(error.message, 'error');
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+    }
+  });
+
+  // ============================================
+  // UTILITY FUNCTIONS
+  // ============================================
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  function showMessage(text, type) {
+    const messageEl = document.getElementById('upload-message');
+    messageEl.textContent = text;
+    messageEl.className = `message ${type} active`;
+
+    // Auto-hide after 5 seconds for success/error
+    if (type !== 'info') {
+      setTimeout(() => {
+        messageEl.classList.remove('active');
+      }, 5000);
+    }
+  }
+</script>
+{% endblock %}

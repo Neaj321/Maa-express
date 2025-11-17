@@ -1,154 +1,212 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
+{% block title %}Create Category 1 Listing - Admin{% endblock %}
+
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<div class="admin-content">
+  <div class="page-header">
+    <h1>➕ Create Category 1 Listing</h1>
+    <p class="subtitle">Create a new luggage space listing on behalf of a user</p>
+  </div>
 
-<div class="admin-header">
-  <h2>Create New Category 1 Listing (Admin)</h2>
-  <nav class="admin-tabs">
-    <a href="{{ url_for('admin.dashboard') }}">Overview</a>
-    <a href="{{ url_for('admin.category1_listings') }}" class="active">Category 1</a>
-    <a href="{{ url_for('admin.category2_listings') }}">Category 2</a>
-    <a href="{{ url_for('admin.category3_products') }}">Category 3</a>
-    <a href="{{ url_for('admin.users') }}">Users</a>
-  </nav>
-</div>
-
-<div class="panel">
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
-  <form method="POST" action="{{ url_for('admin.create_category1_listing') }}" class="admin-form">
+  <form method="POST" class="admin-form">
+    <!-- User Selection -->
     <div class="form-section">
-      <h3>User Assignment</h3>
-      <label class="form-label">
-        <span>Assign to User *</span>
-        <select name="user_id" required class="form-input">
+      <h3>👤 User</h3>
+      <div class="form-group">
+        <label for="user_id">Select User *</label>
+        <select name="user_id" id="user_id" required>
           <option value="">-- Select User --</option>
-          {% for u in users %}
-            <option value="{{ u.id }}">{{ u.email }} ({{ u.full_name }})</option>
+          {% for user in users %}
+          <option value="{{ user.id }}">{{ user.full_name }} ({{ user.email }})</option>
           {% endfor %}
         </select>
-      </label>
+      </div>
+    </div>
 
-      <label class="form-label">
-        <span>Admin Status</span>
-        <select name="admin_status" class="form-input">
-          <option value="pending">Pending</option>
+    <!-- Basic Details -->
+    <div class="form-section">
+      <h3>📝 Basic Details</h3>
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input type="text" name="title" id="title" required 
+               placeholder="e.g., Sydney to Dhaka - 20kg available">
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea name="description" id="description" rows="4"
+                  placeholder="Additional details about the listing..."></textarea>
+      </div>
+    </div>
+
+    <!-- Origin & Destination -->
+    <div class="form-section">
+      <h3>📍 Origin & Destination</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="origin">Origin *</label>
+          <input type="text" name="origin" id="origin" required 
+                 placeholder="e.g., Sydney, Australia">
+        </div>
+        <div class="form-group">
+          <label for="origin_airport">Origin Airport *</label>
+          <input type="text" name="origin_airport" id="origin_airport" required
+                 placeholder="e.g., Sydney Kingsford Smith Airport">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="origin_delivery_location">Origin Delivery Location</label>
+          <input type="text" name="origin_delivery_location" id="origin_delivery_location"
+                 placeholder="Optional pickup address">
+        </div>
+        <div class="form-group">
+          <label for="origin_delivery_postcode">Origin Postcode</label>
+          <input type="text" name="origin_delivery_postcode" id="origin_delivery_postcode"
+                 placeholder="e.g., 2000">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="destination">Destination *</label>
+          <input type="text" name="destination" id="destination" required
+                 placeholder="e.g., Dhaka, Bangladesh">
+        </div>
+        <div class="form-group">
+          <label for="destination_airport">Destination Airport *</label>
+          <input type="text" name="destination_airport" id="destination_airport" required
+                 placeholder="e.g., Hazrat Shahjalal International Airport">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="destination_delivery_location">Destination Delivery Location</label>
+          <input type="text" name="destination_delivery_location" id="destination_delivery_location"
+                 placeholder="Optional delivery address">
+        </div>
+        <div class="form-group">
+          <label for="destination_delivery_postcode">Destination Postcode</label>
+          <input type="text" name="destination_delivery_postcode" id="destination_delivery_postcode"
+                 placeholder="e.g., 1212">
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing & Date -->
+    <div class="form-section">
+      <h3>💰 Pricing & Travel Date</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="travel_date">Travel Date *</label>
+          <input type="date" name="travel_date" id="travel_date" required>
+        </div>
+        <div class="form-group">
+          <label for="price">Price (per kg) *</label>
+          <input type="number" name="price" id="price" step="0.01" min="0" required
+                 placeholder="50.00">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="discount_percent">Discount %</label>
+          <input type="number" name="discount_percent" id="discount_percent" 
+                 step="0.1" min="0" max="100" value="0"
+                 placeholder="0">
+        </div>
+        <div class="form-group">
+          <label for="image_url">Image URL</label>
+          <input type="url" name="image_url" id="image_url"
+                 placeholder="https://example.com/image.jpg">
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Status -->
+    <div class="form-section">
+      <h3>⚙️ Admin Settings</h3>
+      <div class="form-group">
+        <label for="admin_status">Initial Status *</label>
+        <select name="admin_status" id="admin_status" required>
+          <option value="pending">Pending Review</option>
           <option value="approved">Approved</option>
           <option value="rejected">Rejected</option>
         </select>
-      </label>
+      </div>
     </div>
 
-    <div class="form-section">
-      <h3>Listing Details</h3>
-      <label class="form-label">
-        <span>Title *</span>
-        <input type="text" name="title" required class="form-input" placeholder="e.g., Sydney to Dhaka - 10kg available">
-      </label>
-
-      <label class="form-label">
-        <span>Description</span>
-        <textarea name="description" class="form-input" rows="3" placeholder="Additional details..."></textarea>
-      </label>
-
-      <label class="form-label">
-        <span>Travel Date *</span>
-        <input type="date" name="travel_date" required class="form-input">
-      </label>
-
-      <label class="form-label">
-        <span>Image URL</span>
-        <input type="url" name="image_url" class="form-input" placeholder="https://...">
-      </label>
-    </div>
-
-    <div class="form-section">
-      <h3>Origin</h3>
-      <label class="form-label">
-        <span>Origin Location *</span>
-        <input type="text" name="origin" required class="form-input" placeholder="e.g., Sydney, Australia">
-      </label>
-
-      <label class="form-label">
-        <span>Origin Airport Code *</span>
-        <input type="text" name="origin_airport" required class="form-input" placeholder="e.g., SYD" maxlength="10">
-      </label>
-
-      <label class="form-label">
-        <span>Origin Delivery Location</span>
-        <input type="text" name="origin_delivery_location" class="form-input">
-      </label>
-
-      <label class="form-label">
-        <span>Origin Postcode</span>
-        <input type="text" name="origin_delivery_postcode" class="form-input">
-      </label>
-    </div>
-
-    <div class="form-section">
-      <h3>Destination</h3>
-      <label class="form-label">
-        <span>Destination Location *</span>
-        <input type="text" name="destination" required class="form-input" placeholder="e.g., Dhaka, Bangladesh">
-      </label>
-
-      <label class="form-label">
-        <span>Destination Airport Code *</span>
-        <input type="text" name="destination_airport" required class="form-input" placeholder="e.g., DAC" maxlength="10">
-      </label>
-
-      <label class="form-label">
-        <span>Destination Delivery Location</span>
-        <input type="text" name="destination_delivery_location" class="form-input">
-      </label>
-
-      <label class="form-label">
-        <span>Destination Postcode</span>
-        <input type="text" name="destination_delivery_postcode" class="form-input">
-      </label>
-    </div>
-
-    <div class="form-section">
-      <h3>Pricing</h3>
-      <label class="form-label">
-        <span>Price (AUD) *</span>
-        <input type="number" name="price" step="0.01" min="0" required class="form-input" placeholder="50.00">
-      </label>
-
-      <label class="form-label">
-        <span>Discount Percent</span>
-        <input type="number" name="discount_percent" step="0.01" min="0" max="100" class="form-input" placeholder="0">
-      </label>
-    </div>
-
+    <!-- Submit Buttons -->
     <div class="form-actions">
-      <button type="submit" class="btn-primary">Create Listing</button>
-      <a href="{{ url_for('admin.category1_listings') }}" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">
+        ✅ Create Listing
+      </button>
+      <a href="{{ url_for('admin.category1_listings') }}" class="btn btn-secondary">
+        Cancel
+      </a>
     </div>
   </form>
 </div>
 
 <style>
-.form-section { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb; }
-.form-section:last-of-type { border-bottom: none; }
-.form-section h3 { margin: 0 0 12px; font-size: 1.1rem; color: #374151; }
-.form-label { display: block; margin-bottom: 12px; }
-.form-label span { display: block; margin-bottom: 4px; font-weight: 600; color: #4b5563; }
-.form-input { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.95rem; }
-.form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-.form-actions { margin-top: 24px; display: flex; gap: 12px; }
-.btn-primary { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-.btn-primary:hover { background: #2563eb; }
-.btn-secondary { background: #f3f4f6; color: #374151; padding: 10px 20px; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none; display: inline-block; }
-.btn-secondary:hover { background: #e5e7eb; }
-.alert { padding: 12px; border-radius: 6px; margin-bottom: 16px; }
-.alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-.alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.admin-form {
+  max-width: 900px;
+}
+
+.form-section {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.form-section h3 {
+  margin-bottom: 20px;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 10px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #1a73e8;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
 </style>
 {% endblock %}

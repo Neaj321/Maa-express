@@ -1,156 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}Purchase Luggage Space - Maa Express{% endblock %}
+{% block title %}Complete Purchase - Maa Express{% endblock %}
 
 {% block extra_css %}
 <style>
+/* ============================================
+   BUY FORM STYLES - COMPLETE VERSION
+   ============================================ */
+
+/* Container & Layout */
 .buy-container {
   max-width: 800px;
   margin: 40px auto;
   padding: 20px;
+  background: #ffffff;
 }
 
 .page-header {
   text-align: center;
   margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
 }
 
 .page-header h1 {
   font-size: 2rem;
   color: #1f2937;
   margin-bottom: 8px;
-}
-
-.order-summary {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  padding: 24px;
-  border-radius: 12px;
-  margin-bottom: 32px;
-  border: 2px solid #1a73e8;
-}
-
-.order-summary h3 {
-  font-size: 1.3rem;
-  color: #1f2937;
-  margin-bottom: 16px;
   font-weight: 700;
 }
 
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #bfdbfe;
-}
-
-.summary-row:last-child {
-  border-bottom: none;
-  border-top: 2px solid #1a73e8;
-  padding-top: 16px;
-  margin-top: 8px;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.summary-label {
-  color: #374151;
-}
-
-.summary-value {
-  color: #1f2937;
-  font-weight: 600;
-}
-
-.form-section {
-  background: white;
-  padding: 32px;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  margin-bottom: 24px;
-}
-
-.form-section h3 {
-  font-size: 1.3rem;
-  color: #1f2937;
-  margin-bottom: 20px;
-  font-weight: 700;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-label {
-  display: block;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.form-label .required {
-  color: #ef4444;
-}
-
-.form-input,
-.form-textarea {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #d1d5db;
-  border-radius: 8px;
+.page-header p {
+  color: #6b7280;
   font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
-}
-
-.form-textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-.submit-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-}
-
-.submit-btn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.error-message {
-  background: #fef2f2;
-  border: 2px solid #ef4444;
-  color: #991b1b;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  display: none;
-}
-
-.error-message.show {
-  display: block;
 }
 
 .back-link {
@@ -159,151 +41,1013 @@
   color: #1a73e8;
   text-decoration: none;
   font-weight: 600;
+  transition: all 0.2s;
+  font-size: 0.95rem;
 }
 
 .back-link:hover {
   text-decoration: underline;
+  transform: translateX(-3px);
 }
 
+/* Order Summary Box */
+.order-summary {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  padding: 28px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  border: 2px solid #1a73e8;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.1);
+}
+
+.order-summary h3 {
+  font-size: 1.4rem;
+  color: #1f2937;
+  margin-bottom: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-summary h3::before {
+  content: "📋";
+  font-size: 1.6rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #bfdbfe;
+  transition: background 0.2s;
+}
+
+.summary-row:hover {
+  background: rgba(255, 255, 255, 0.5);
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 4px;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 2px solid #1a73e8;
+  font-size: 1.1rem;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.summary-value {
+  font-weight: 700;
+  color: #1f2937;
+  text-align: right;
+}
+
+.summary-row:last-child .summary-value {
+  color: #1a73e8;
+  font-size: 1.3rem;
+}
+
+/* Form Section */
+.form-section {
+  background: white;
+  padding: 36px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  margin-bottom: 24px;
+}
+
+.form-section h3 {
+  font-size: 1.4rem;
+  color: #1f2937;
+  margin-bottom: 28px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.section-divider {
+  height: 2px;
+  background: linear-gradient(90deg, #1a73e8 0%, transparent 100%);
+  margin: 24px 0;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.required {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-input:hover,
+.form-textarea:hover,
+.form-select:hover {
+  border-color: #9ca3af;
+}
+
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.form-hint {
+  display: block;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Weight Selector - Enhanced */
+.weight-selector {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  padding: 24px;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.weight-selector h4 {
+  font-size: 1.1rem;
+  color: #1f2937;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.weight-input-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.weight-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.weight-input:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+}
+
+.weight-unit {
+  font-weight: 700;
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+.weight-hint {
+  font-size: 0.9rem;
+  color: #6b7280;
+  background: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Payment Method Selection - Enhanced */
+.payment-methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.payment-option {
+  position: relative;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+}
+
+.payment-option:hover {
+  border-color: #1a73e8;
+  background: #f0f7ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
+}
+
+.payment-option input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #1a73e8;
+  flex-shrink: 0;
+}
+
+.payment-option.selected {
+  border-color: #1a73e8;
+  background: #eff6ff;
+  box-shadow: 0 4px 16px rgba(26, 115, 232, 0.2);
+  transform: translateY(-2px);
+}
+
+.payment-option.selected::after {
+  content: "✓";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #1a73e8;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.payment-label {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+
+/* Submit Button - Enhanced */
+.submit-btn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 28px;
+  box-shadow: 0 4px 16px rgba(26, 115, 232, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.submit-btn::before {
+  content: "🛒";
+  font-size: 1.3rem;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1557b0 0%, #0d47a1 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* Error Message - Enhanced */
+.error-message {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  display: none;
+  border: 2px solid #fecaca;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+}
+
+.error-message::before {
+  content: "⚠️ ";
+  font-size: 1.2rem;
+  margin-right: 8px;
+}
+
+.error-message.show {
+  display: block;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Info Box */
+.info-box {
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.info-box p {
+  margin: 0;
+  color: #92400e;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.info-box strong {
+  color: #78350f;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   .buy-container {
     padding: 10px;
+    margin: 20px auto;
   }
   
   .form-section {
+    padding: 24px 16px;
+  }
+
+  .payment-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .order-summary {
     padding: 20px;
   }
+
+  .summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .summary-value {
+    text-align: left;
+  }
+
+  .weight-selector {
+    padding: 16px;
+  }
+
+  .submit-btn {
+    padding: 16px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-option {
+    padding: 14px;
+  }
+
+  .payment-label {
+    font-size: 0.85rem;
+  }
+}
+
+/* Loading Animation */
+.submit-btn.loading::after {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-left: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success State */
+.form-input.valid {
+  border-color: #10b981;
+}
+
+.form-input.invalid {
+  border-color: #ef4444;
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="buy-container">
-  <a href="{{ url_for('category1.detail', listing_id=listing.id) }}" class="back-link">← Back to listing</a>
+  <!-- Back Navigation -->
+  <a href="{{ url_for('category1.detail', listing_id=listing.id) }}" class="back-link">
+    ← Back to listing details
+  </a>
 
+  <!-- Page Header -->
   <div class="page-header">
     <h1>📦 Complete Your Purchase</h1>
+    <p>Fill in the details below to proceed with payment</p>
   </div>
 
   <!-- Order Summary -->
   <div class="order-summary">
     <h3>Order Summary</h3>
+    
     <div class="summary-row">
       <span class="summary-label">Route:</span>
       <span class="summary-value">{{ listing.origin }} ✈️ {{ listing.destination }}</span>
     </div>
+    
     <div class="summary-row">
       <span class="summary-label">Travel Date:</span>
       <span class="summary-value">{{ listing.travel_date.strftime('%d %b %Y') }}</span>
     </div>
-    <div class="summary-row">
-      <span class="summary-label">Selected Weight:</span>
-      <span class="summary-value">{{ selected_weight }} kg</span>
-    </div>
+    
     <div class="summary-row">
       <span class="summary-label">Price per kg:</span>
-      <span class="summary-value">{{ listing.currency }} {{ listing.price_per_kg }}</span>
+      <span class="summary-value">{{ listing.currency }} ${{ "%.2f"|format(listing.price_per_kg) }}</span>
     </div>
+    
+    <div class="summary-row">
+      <span class="summary-label">Available Weight:</span>
+      <span class="summary-value">{{ listing.total_weight }} kg</span>
+    </div>
+    
     {% if listing.discount_percent > 0 %}
     <div class="summary-row">
-      <span class="summary-label">Discount ({{ listing.discount_percent }}%):</span>
-      <span class="summary-value">-{{ listing.currency }} {{ discount_amount|round(2) }}</span>
+      <span class="summary-label">Discount:</span>
+      <span class="summary-value" style="color: #10b981;">{{ listing.discount_percent }}% OFF</span>
     </div>
     {% endif %}
+    
     <div class="summary-row">
-      <span class="summary-label">Total Price:</span>
-      <span class="summary-value">{{ listing.currency }} {{ total_price|round(2) }}</span>
+      <span class="summary-label">Estimated Total:</span>
+      <span class="summary-value" id="total-price-display">{{ listing.currency }} $0.00</span>
     </div>
   </div>
 
-  <!-- Error Message -->
+  <!-- Error Message Container -->
   <div id="error-message" class="error-message"></div>
 
-  <!-- Buyer Information Form -->
+  <!-- Purchase Form -->
   <div class="form-section">
-    <h3>Receiver Information</h3>
+    <h3>🛍️ Purchase Details</h3>
+    
     <form id="buy-form">
+      
+      <!-- ✅ PURCHASED WEIGHT SELECTOR -->
+      <div class="weight-selector">
+        <h4>Select Weight</h4>
+        <div class="form-group">
+          <label class="form-label">
+            How much weight do you need? <span class="required">*</span>
+          </label>
+          <div class="weight-input-group">
+            <input 
+              type="number" 
+              name="purchased_weight" 
+              id="purchased-weight" 
+              class="weight-input" 
+              min="0.1" 
+              max="{{ listing.total_weight }}" 
+              step="0.1" 
+              value="1.0"
+              required
+              placeholder="Enter weight"
+            />
+            <span class="weight-unit">kg</span>
+          </div>
+          <span class="weight-hint">
+            📦 Available: {{ listing.total_weight }} kg
+          </span>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Receiver Information Section -->
+      <h4 style="font-size: 1.1rem; color: #1f2937; margin-bottom: 20px; font-weight: 700;">
+        👤 Receiver Information
+      </h4>
+
       <div class="form-group">
-        <label class="form-label">Receiver Full Name <span class="required">*</span></label>
-        <input type="text" name="receiver_fullname" class="form-input" required>
+        <label class="form-label">
+          Receiver Full Name <span class="required">*</span>
+        </label>
+        <input 
+          type="text" 
+          name="receiver_fullname" 
+          class="form-input" 
+          required 
+          maxlength="255" 
+          placeholder="e.g., John Smith"
+        />
+        <span class="form-hint">Enter the full name of the person receiving the parcel</span>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Receiver Phone <span class="required">*</span></label>
-        <input type="tel" name="receiver_phone" class="form-input" required placeholder="+61 XXX XXX XXX">
+        <label class="form-label">
+          Receiver Phone <span class="required">*</span>
+        </label>
+        <input 
+          type="tel" 
+          name="receiver_phone" 
+          class="form-input" 
+          required 
+          placeholder="+61 XXX XXX XXX" 
+          maxlength="30"
+        />
+        <span class="form-hint">Include country code (e.g., +61 for Australia)</span>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Receiver Email <span class="required">*</span></label>
-        <input type="email" name="receiver_email" class="form-input" required placeholder="email@example.com">
+        <label class="form-label">
+          Receiver Email <span class="required">*</span>
+        </label>
+        <input 
+          type="email" 
+          name="receiver_email" 
+          class="form-input" 
+          required 
+          placeholder="email@example.com" 
+          maxlength="255"
+        />
+        <span class="form-hint">We'll send delivery updates to this email</span>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Delivery Information Section -->
+      <h4 style="font-size: 1.1rem; color: #1f2937; margin-bottom: 20px; font-weight: 700;">
+        📍 Delivery Information
+      </h4>
+
+      <div class="form-group">
+        <label class="form-label">
+          Delivery Address <span class="required">*</span>
+        </label>
+        <textarea 
+          name="delivery_address" 
+          class="form-textarea" 
+          required 
+          placeholder="Enter full delivery address including street, suburb, city"
+        ></textarea>
+        <span class="form-hint">Provide complete address for accurate delivery</span>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Delivery Address <span class="required">*</span></label>
-        <textarea name="delivery_address" class="form-textarea" required placeholder="Enter full delivery address"></textarea>
+        <label class="form-label">
+          Delivery Postcode <span class="required">*</span>
+        </label>
+        <input 
+          type="text" 
+          name="delivery_postcode" 
+          class="form-input" 
+          required 
+          placeholder="e.g., 2000" 
+          maxlength="20"
+        />
       </div>
 
       <div class="form-group">
-        <label class="form-label">Delivery Postcode <span class="required">*</span></label>
-        <input type="text" name="delivery_postcode" class="form-input" required placeholder="e.g., 2000">
+        <label class="form-label">
+          Delivery Country <span class="required">*</span>
+        </label>
+        <input 
+          type="text" 
+          name="delivery_country" 
+          class="form-input" 
+          required 
+          placeholder="e.g., Australia" 
+          maxlength="255"
+        />
       </div>
+
+      <div class="section-divider"></div>
+
+      <!-- ✅ PAYMENT METHOD SELECTION -->
+      <h4 style="font-size: 1.1rem; color: #1f2937; margin-bottom: 20px; font-weight: 700;">
+        💳 Payment Method
+      </h4>
 
       <div class="form-group">
-        <label class="form-label">Delivery Country <span class="required">*</span></label>
-        <input type="text" name="delivery_country" class="form-input" required placeholder="e.g., Australia">
+        <label class="form-label">
+          Select Payment Method <span class="required">*</span>
+        </label>
+        <div class="payment-methods">
+          
+          <label class="payment-option">
+            <input type="radio" name="payment_method" value="STRIPE" required>
+            <span class="payment-label">💳 Stripe (Card)</span>
+          </label>
+          
+          <label class="payment-option">
+            <input type="radio" name="payment_method" value="PAYPAL">
+            <span class="payment-label">💰 PayPal</span>
+          </label>
+          
+          <label class="payment-option">
+            <input type="radio" name="payment_method" value="WISE">
+            <span class="payment-label">🌍 Wise</span>
+          </label>
+          
+          <label class="payment-option">
+            <input type="radio" name="payment_method" value="BANK_ACCOUNT">
+            <span class="payment-label">🏦 Bank Transfer</span>
+          </label>
+          
+          <label class="payment-option">
+            <input type="radio" name="payment_method" value="PAYID">
+            <span class="payment-label">📲 PayID</span>
+          </label>
+          
+          <label class="payment-option">
+            <input type="radio" name="payment_method" value="MOBILE_BANKING_BKASH_NAGAD">
+            <span class="payment-label">📱 bKash/Nagad</span>
+          </label>
+          
+          <label class="payment-option">
+            <input type="radio" name="payment_method" value="BKASH_TO_BANK">
+            <span class="payment-label">💸 bKash to Bank</span>
+          </label>
+          
+        </div>
+        <span class="form-hint">Choose your preferred payment method</span>
       </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Optional Note -->
+      <h4 style="font-size: 1.1rem; color: #1f2937; margin-bottom: 20px; font-weight: 700;">
+        📝 Additional Notes (Optional)
+      </h4>
 
       <div class="form-group">
-        <label class="form-label">Special Note (Optional)</label>
-        <textarea name="note" class="form-textarea" placeholder="Any special instructions or notes for the seller"></textarea>
+        <label class="form-label">
+          Special Instructions
+        </label>
+        <textarea 
+          name="note" 
+          class="form-textarea" 
+          placeholder="Any special instructions or notes for the seller (e.g., fragile items, preferred delivery time)"
+          maxlength="1000"
+        ></textarea>
+        <span class="form-hint">Maximum 1000 characters</span>
       </div>
 
+      <!-- Important Notice -->
+      <div class="info-box">
+        <p>
+          <strong>📌 Important:</strong> After submitting this form, you'll be redirected to the payment page. 
+          Your order will be confirmed once payment is received. You'll receive handover and delivery verification 
+          codes via email after successful payment.
+        </p>
+      </div>
+
+      <!-- Submit Button -->
       <button type="submit" class="submit-btn" id="submit-btn">
-        Confirm Purchase
+        Confirm Purchase & Proceed to Payment
       </button>
+      
     </form>
   </div>
 </div>
 
 <script>
-document.getElementById('buy-form').addEventListener('submit', async (e) => {
+// ============================================
+// PRICING CALCULATION & LIVE UPDATE
+// ============================================
+const pricePerKg = parseFloat("{{ listing.price_per_kg }}");
+const maxWeight = parseFloat("{{ listing.total_weight }}");
+const discountPercent = parseFloat("{{ listing.discount_percent }}");
+const currency = "{{ listing.currency }}";
+
+const weightInput = document.getElementById('purchased-weight');
+const totalPriceDisplay = document.getElementById('total-price-display');
+
+function updatePrice() {
+  let weight = parseFloat(weightInput.value) || 0;
+  
+  // Auto-correct invalid values
+  if (weight > maxWeight) {
+    weightInput.value = maxWeight;
+    weight = maxWeight;
+  }
+  
+  if (weight < 0.1 && weight > 0) {
+    weightInput.value = 0.1;
+    weight = 0.1;
+  }
+
+  // Calculate prices
+  const basePrice = pricePerKg * weight;
+  const discountAmount = basePrice * (discountPercent / 100);
+  const totalPrice = basePrice - discountAmount;
+
+  // Update display with animation
+  totalPriceDisplay.style.transform = 'scale(1.05)';
+  totalPriceDisplay.textContent = `${currency} $${totalPrice.toFixed(2)}`;
+  
+  setTimeout(() => {
+    totalPriceDisplay.style.transform = 'scale(1)';
+  }, 200);
+  
+  // Visual feedback for weight input
+  if (weight > 0 && weight <= maxWeight) {
+    weightInput.classList.add('valid');
+    weightInput.classList.remove('invalid');
+  } else if (weight > maxWeight) {
+    weightInput.classList.add('invalid');
+    weightInput.classList.remove('valid');
+  }
+}
+
+weightInput.addEventListener('input', updatePrice);
+weightInput.addEventListener('change', updatePrice);
+
+// Initialize price on page load
+updatePrice();
+
+// ============================================
+// PAYMENT METHOD SELECTION UI
+// ============================================
+document.querySelectorAll('.payment-option').forEach(option => {
+  option.addEventListener('click', function() {
+    // Remove selected class from all options
+    document.querySelectorAll('.payment-option').forEach(o => {
+      o.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked option
+    this.classList.add('selected');
+    
+    // Check the radio button
+    const radio = this.querySelector('input[type="radio"]');
+    if (radio) {
+      radio.checked = true;
+    }
+  });
+});
+
+// ============================================
+// FORM VALIDATION & SUBMISSION
+// ============================================
+const form = document.getElementById('buy-form');
+const submitBtn = document.getElementById('submit-btn');
+const errorMessage = document.getElementById('error-message');
+
+function showError(message) {
+  errorMessage.textContent = message;
+  errorMessage.classList.add('show');
+  errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function hideError() {
+  errorMessage.classList.remove('show');
+}
+
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
   
-  const submitBtn = document.getElementById('submit-btn');
-  const errorMessage = document.getElementById('error-message');
-  
-  // Disable button
+  // Disable submit button
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Processing...';
-  errorMessage.classList.remove('show');
+  submitBtn.classList.add('loading');
+  submitBtn.textContent = 'Processing Purchase...';
+  hideError();
   
+  // Collect form data
   const formData = new FormData(e.target);
   const data = Object.fromEntries(formData);
   
+  // ✅ FRONTEND VALIDATION
+  
+  // Validate payment method selected
+  if (!data.payment_method) {
+    showError('Please select a payment method');
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+    submitBtn.textContent = 'Confirm Purchase & Proceed to Payment';
+    return;
+  }
+  
+  // Validate weight
+  const weight = parseFloat(data.purchased_weight);
+  if (isNaN(weight) || weight <= 0 || weight > maxWeight) {
+    showError(`Weight must be between 0.1 and ${maxWeight} kg`);
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+    submitBtn.textContent = 'Confirm Purchase & Proceed to Payment';
+    weightInput.focus();
+    return;
+  }
+  
+  // Validate receiver details
+  if (!data.receiver_fullname || data.receiver_fullname.trim().length < 2) {
+    showError('Please enter receiver full name (at least 2 characters)');
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+    submitBtn.textContent = 'Confirm Purchase & Proceed to Payment';
+    return;
+  }
+  
+  if (!data.receiver_phone || data.receiver_phone.trim().length < 6) {
+    showError('Please enter valid receiver phone number');
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+    submitBtn.textContent = 'Confirm Purchase & Proceed to Payment';
+    return;
+  }
+  
+  if (!data.receiver_email || !data.receiver_email.includes('@')) {
+    showError('Please enter valid receiver email address');
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+    submitBtn.textContent = 'Confirm Purchase & Proceed to Payment';
+    return;
+  }
+  
+  if (!data.delivery_address || data.delivery_address.trim().length < 10) {
+    showError('Please enter complete delivery address (at least 10 characters)');
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+    submitBtn.textContent = 'Confirm Purchase & Proceed to Payment';
+    return;
+  }
+  
+  // ✅ SUBMIT TO BACKEND
   try {
-    const response = await fetch(window.location.href, {
+    const response = await fetch('{{ url_for("category1.process_purchase", listing_id=listing.id) }}', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(data)
     });
     
     const result = await response.json();
     
     if (result.success) {
-      alert(result.message);
-      window.location.href = result.redirect_url;
+      // Success - redirect to payment page
+      submitBtn.textContent = '✓ Success! Redirecting...';
+      submitBtn.style.background = '#10b981';
+      
+      setTimeout(() => {
+        window.location.href = result.redirect_url;
+      }, 500);
+      
     } else {
-      errorMessage.textContent = result.error || 'An error occurred';
-      errorMessage.classList.add('show');
+      // Error from backend
+      showError(result.error || 'An error occurred. Please try again.');
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Confirm Purchase';
+      submitBtn.classList.remove('loading');
+      submitBtn.textContent = 'Confirm Purchase & Proceed to Payment';
     }
+    
   } catch (error) {
-    errorMessage.textContent = 'Purchase failed: ' + error.message;
-    errorMessage.classList.add('show');
+    console.error('Purchase submission error:', error);
+    showError('Network error: ' + error.message + '. Please check your connection and try again.');
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Confirm Purchase';
+    submitBtn.classList.remove('loading');
+    submitBtn.textContent = 'Confirm Purchase & Proceed to Payment';
+  }
+});
+
+// ============================================
+// REAL-TIME INPUT VALIDATION
+// ============================================
+const inputs = form.querySelectorAll('.form-input, .form-textarea');
+
+inputs.forEach(input => {
+  input.addEventListener('blur', function() {
+    if (this.hasAttribute('required') && !this.value.trim()) {
+      this.classList.add('invalid');
+      this.classList.remove('valid');
+    } else if (this.value.trim()) {
+      this.classList.add('valid');
+      this.classList.remove('invalid');
+    }
+  });
+  
+  input.addEventListener('input', function() {
+    if (this.classList.contains('invalid') && this.value.trim()) {
+      this.classList.remove('invalid');
+      this.classList.add('valid');
+    }
+  });
+});
+
+// ============================================
+// FORM AUTO-SAVE (OPTIONAL)
+// ============================================
+let autoSaveTimeout;
+
+form.addEventListener('input', () => {
+  clearTimeout(autoSaveTimeout);
+  autoSaveTimeout = setTimeout(() => {
+    // Auto-save form data to localStorage
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    localStorage.setItem('buy_form_data', JSON.stringify(data));
+  }, 1000);
+});
+
+// Restore form data on page load
+window.addEventListener('DOMContentLoaded', () => {
+  const savedData = localStorage.getItem('buy_form_data');
+  if (savedData) {
+    try {
+      const data = JSON.parse(savedData);
+      Object.keys(data).forEach(key => {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (input && input.type !== 'radio') {
+          input.value = data[key];
+        } else if (input && input.type === 'radio' && input.value === data[key]) {
+          input.checked = true;
+          input.closest('.payment-option')?.classList.add('selected');
+        }
+      });
+      
+      // Update price after restoring weight
+      updatePrice();
+    } catch (e) {
+      console.error('Error restoring form data:', e);
+    }
+  }
+});
+
+// Clear saved data after successful submission
+window.addEventListener('beforeunload', (e) => {
+  if (submitBtn.disabled) {
+    localStorage.removeItem('buy_form_data');
   }
 });
 </script>
+
 {% endblock %}

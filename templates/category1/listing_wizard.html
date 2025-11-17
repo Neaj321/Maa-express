@@ -1,9 +1,46 @@
 {% extends "base.html" %}
-
 {% block title %}
   {% if mode == 'edit' %}Edit Listing{% else %}Create New Listing{% endif %} - Maa Express
 {% endblock %}
+{% block extra_head %}
+<script>
+// ============================================================================
+// SET MINIMUM DATE ON PAGE LOAD
+// ============================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Set minimum date to tomorrow
+  const travelDateInput = document.querySelector('[name="travel_date"]');
+  if (travelDateInput) {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const minDate = tomorrow.toISOString().split('T')[0];
+    travelDateInput.setAttribute('min', minDate);
 
+    // Also validate on change
+    travelDateInput.addEventListener('change', function() {
+      const selectedDate = new Date(this.value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate <= today) {
+        alert('Please select a future date (tomorrow or later)');
+        this.value = '';
+      }
+    });
+  }
+});
+
+  // Set minimum date on form date input
+  const travelDateInput = document.querySelector('[name="travel_date"]');
+  if (travelDateInput && !travelDateInput.hasAttribute('min')) {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const minDate = tomorrow.toISOString().split('T')[0];
+    travelDateInput.setAttribute('min', minDate);
+  }
+});
+</script>
+{% endblock %}
 {% block extra_css %}
 <style>
 /* ============================================
@@ -619,11 +656,11 @@
   <div class="wizard-progress">
     <div class="progress-step active" data-step="1">
       <div class="step-number">1</div>
-      <div class="step-label">Basic Info</div>
+      <div class="step-label">Travel & Pricing</div>
     </div>
     <div class="progress-step" data-step="2">
       <div class="step-number">2</div>
-      <div class="step-label">Pricing</div>
+      <div class="step-label">Locations</div>
     </div>
     <div class="progress-step" data-step="3">
       <div class="step-number">3</div>
@@ -635,197 +672,15 @@
   <form id="listing-wizard-form">
     
     <!-- ============================================
-         STEP 1: BASIC INFORMATION
+         STEP 1: TRAVEL DATE, SERVICE TYPE & PRICING
          ============================================ -->
     <div class="wizard-step active" data-step="1">
-      <h2 class="step-title">Basic Information</h2>
-      <p class="step-description">Tell us about your travel route and available luggage space</p>
+      <h2 class="step-title">Travel & Pricing Details</h2>
+      <p class="step-description">Set your travel date, service type, and pricing</p>
 
-      <!-- Origin Section -->
+      <!-- Travel Date -->
       <div class="form-section">
-        <h3 class="section-title">📍 Origin (Departure)</h3>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">
-              <span class="label-text">Origin City/Country *</span>
-              <input 
-                type="text" 
-                name="origin" 
-                class="form-input" 
-                placeholder="e.g., Sydney, Australia"
-                value="{% if mode == 'edit' %}{{ listing.origin }}{% endif %}"
-                required
-              />
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">
-              <span class="label-text">Airport Name *</span>
-              <input 
-                type="text" 
-                name="origin_airport" 
-                class="form-input" 
-                placeholder="e.g., Sydney Kingsford Smith Airport"
-                value="{% if mode == 'edit' %}{{ listing.origin_airport }}{% endif %}"
-                required
-              />
-              <span class="input-hint">Enter full airport name (not code)</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">
-              <span class="label-text">Pickup Location <span class="label-optional">(Optional)</span></span>
-              <input 
-                type="text" 
-                name="origin_delivery_location" 
-                class="form-input" 
-                placeholder="e.g., 123 Main St, Suburb"
-                value="{% if mode == 'edit' %}{{ listing.origin_delivery_location }}{% endif %}"
-              />
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">
-              <span class="label-text">Postcode <span class="label-optional">(Optional)</span></span>
-              <input 
-                type="text" 
-                name="origin_delivery_postcode" 
-                class="form-input" 
-                placeholder="e.g., 2000"
-                maxlength="20"
-                value="{% if mode == 'edit' %}{{ listing.origin_delivery_postcode }}{% endif %}"
-              />
-            </label>
-          </div>
-        </div>
-
-        <!-- Origin Phone -->
-        <div class="form-group">
-          <label class="form-label">
-            <span class="label-text">Origin Contact Phone *</span>
-            <div class="phone-input-group">
-              <select name="origin_phone_country_code" class="country-code-select" required>
-                <option value="+61" {% if mode == 'edit' and listing.origin_phone_number.startswith('+61') %}selected{% endif %}>🇦🇺 +61</option>
-                <option value="+1" {% if mode == 'edit' and listing.origin_phone_number.startswith('+1') %}selected{% endif %}>🇺🇸 +1</option>
-                <option value="+44" {% if mode == 'edit' and listing.origin_phone_number.startswith('+44') %}selected{% endif %}>🇬🇧 +44</option>
-                <option value="+880" {% if mode == 'edit' and listing.origin_phone_number.startswith('+880') %}selected{% endif %}>🇧🇩 +880</option>
-                <option value="+91" {% if mode == 'edit' and listing.origin_phone_number.startswith('+91') %}selected{% endif %}>🇮🇳 +91</option>
-                <option value="+86" {% if mode == 'edit' and listing.origin_phone_number.startswith('+86') %}selected{% endif %}>🇨🇳 +86</option>
-              </select>
-              <input 
-                type="tel" 
-                name="origin_phone_local" 
-                class="form-input" 
-                placeholder="412345678"
-                pattern="[0-9]{6,15}"
-                value="{% if mode == 'edit' %}{{ listing.origin_phone_number[3:] if listing.origin_phone_number else '' }}{% endif %}"
-                required
-              />
-            </div>
-            <span class="input-hint">This will be verified in Step 3</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Destination Section -->
-      <div class="form-section">
-        <h3 class="section-title">📍 Destination (Arrival)</h3>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">
-              <span class="label-text">Destination City/Country *</span>
-              <input 
-                type="text" 
-                name="destination" 
-                class="form-input" 
-                placeholder="e.g., Dhaka, Bangladesh"
-                value="{% if mode == 'edit' %}{{ listing.destination }}{% endif %}"
-                required
-              />
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">
-              <span class="label-text">Airport Name *</span>
-              <input 
-                type="text" 
-                name="destination_airport" 
-                class="form-input" 
-                placeholder="e.g., Hazrat Shahjalal International Airport"
-                value="{% if mode == 'edit' %}{{ listing.destination_airport }}{% endif %}"
-                required
-              />
-              <span class="input-hint">Enter full airport name (not code)</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">
-              <span class="label-text">Delivery Location <span class="label-optional">(Optional)</span></span>
-              <input 
-                type="text" 
-                name="destination_delivery_location" 
-                class="form-input" 
-                placeholder="e.g., Gulshan, Dhaka"
-                value="{% if mode == 'edit' %}{{ listing.destination_delivery_location }}{% endif %}"
-              />
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">
-              <span class="label-text">Postcode <span class="label-optional">(Optional)</span></span>
-              <input 
-                type="text" 
-                name="destination_delivery_postcode" 
-                class="form-input" 
-                placeholder="e.g., 1212"
-                maxlength="20"
-                value="{% if mode == 'edit' %}{{ listing.destination_delivery_postcode }}{% endif %}"
-              />
-            </label>
-          </div>
-        </div>
-
-        <!-- Destination Phone -->
-        <div class="form-group">
-          <label class="form-label">
-            <span class="label-text">Destination Contact Phone <span class="label-optional">(Optional)</span></span>
-            <div class="phone-input-group">
-              <select name="destination_phone_country_code" class="country-code-select">
-                <option value="">--</option>
-                <option value="+61" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+61') %}selected{% endif %}>🇦🇺 +61</option>
-                <option value="+1" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+1') %}selected{% endif %}>🇺🇸 +1</option>
-                <option value="+44" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+44') %}selected{% endif %}>🇬🇧 +44</option>
-                <option value="+880" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+880') %}selected{% endif %}>🇧🇩 +880</option>
-                <option value="+91" {% if mode == 'edit' and listing.destination_phone_number and listing.destination_phone_number.startswith('+91') %}selected{% endif %}>🇮🇳 +91</option>
-              </select>
-              <input 
-                type="tel" 
-                name="destination_phone_local" 
-                class="form-input" 
-                placeholder="1712345678"
-                pattern="[0-9]{6,15}"
-                value="{% if mode == 'edit' and listing.destination_phone_number %}{{ listing.destination_phone_number[4:] }}{% endif %}"
-              />
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <!-- Travel Date & Service Type -->
-      <div class="form-section">
-        <h3 class="section-title">📅 Travel Details</h3>
+        <h3 class="section-title">📅 Travel Information</h3>
         
         <div class="form-group">
           <label class="form-label">
@@ -834,6 +689,7 @@
               type="date" 
               name="travel_date" 
               class="form-input"
+              min="{{ (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d') }}"
               value="{% if mode == 'edit' %}{{ listing.travel_date.strftime('%Y-%m-%d') }}{% endif %}"
               required
             />
@@ -841,7 +697,7 @@
           </label>
         </div>
 
-        <!-- ✅ SERVICE TYPE SECTION -->
+        <!-- Service Type -->
         <div class="form-group">
           <label class="label-text">Service Type *</label>
           <div class="service-options">
@@ -901,12 +757,8 @@
 
           </div>
         </div>
-      </div>
 
-      <!-- Description (Optional) -->
-      <div class="form-section">
-        <h3 class="section-title">📝 Additional Information</h3>
-        
+        <!-- Description (Optional) -->
         <div class="form-group">
           <label class="form-label">
             <span class="label-text">Description <span class="label-optional">(Optional)</span></span>
@@ -920,20 +772,6 @@
           </label>
         </div>
       </div>
-
-      <!-- Navigation Buttons -->
-      <div class="wizard-navigation">
-        <button type="button" class="btn btn-secondary" disabled>← Previous</button>
-        <button type="button" class="btn btn-primary" onclick="nextStep(1)">Next: Pricing →</button>
-      </div>
-    </div>
-
-    <!-- ============================================
-         STEP 2: PRICING & DOCUMENTS
-         ============================================ -->
-    <div class="wizard-step" data-step="2">
-      <h2 class="step-title">Pricing & Documents</h2>
-      <p class="step-description">Set your pricing and upload verification documents</p>
 
       <!-- Pricing Section -->
       <div class="form-section">
@@ -1088,158 +926,17 @@
 
       <!-- Navigation Buttons -->
       <div class="wizard-navigation">
-        <button type="button" class="btn btn-secondary" onclick="prevStep(2)">← Previous</button>
-        <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next: Verification →</button>
+        <button type="button" class="btn btn-secondary" disabled>← Previous</button>
+        <button type="button" class="btn btn-primary" onclick="nextStep(1)">Next: Locations →</button>
       </div>
 
-      <div id="step2-message" class="form-message"></div>
+      <div id="step1-message" class="form-message"></div>
     </div>
 
     <!-- ============================================
-         STEP 3: PHONE VERIFICATION
+         STEP 2: ORIGIN & DESTINATION DETAILS
          ============================================ -->
-    <div class="wizard-step" data-step="3">
-      <h2 class="step-title">Phone Verification</h2>
-      <p class="step-description">Verify your phone number to complete the listing</p>
-
-      <!-- Verification Section -->
-      <div class="verification-section">
-        <div class="verification-title">
-          <span>🔐</span>
-          <span>Verify Your Phone Number</span>
-        </div>
-        <p style="color: #92400e; margin-bottom: 12px;">
-          We'll send an OTP to your origin phone number to verify it's yours
-        </p>
-        <div class="verification-phone" id="phone-display">
-          Loading...
-        </div>
-
-        <!-- reCAPTCHA Container -->
-        <div id="recaptcha-container"></div>
-
-        <!-- Send OTP Button -->
-        <button 
-          type="button" 
-          id="send-otp-btn" 
-          class="btn btn-primary" 
-          style="width: 100%; margin-top: 16px;"
-        >
-          📱 Send OTP
-        </button>
-
-        <!-- OTP Input (Hidden initially) -->
-        <div id="otp-input-section" style="display: none; margin-top: 16px;">
-          <label class="form-label">
-            <span class="label-text">Enter 6-digit OTP *</span>
-            <input 
-              type="text" 
-              id="otp-code" 
-              class="otp-input" 
-              placeholder="000000"
-              maxlength="6"
-              pattern="[0-9]{6}"
-            />
-          </label>
-          <button 
-            type="button" 
-            id="verify-otp-btn" 
-            class="btn btn-success" 
-            style="width: 100%; margin-top: 12px;"
-          >
-            ✓ Verify OTP & Submit Listing
-          </button>
-        </div>
-      </div>
-
-      <!-- Hidden input to track phone verification -->
-      <input type="hidden" id="phone-verified" name="phone_verified" value="false" />
-
-      <!-- Navigation Buttons -->
-      <div class="wizard-navigation">
-        <button type="button" class="btn btn-secondary" onclick="prevStep(3)">← Previous</button>
-        <button type="button" class="btn btn-primary" disabled style="opacity: 0.3;">
-          Verify phone first
-        </button>
-      </div>
-
-      <div id="step3-message" class="form-message"></div>
-    </div>
-
-  </form>
-</div>
-
-<!-- ✅ Service Type Radio Button Interaction -->
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Handle radio button selection visual feedback
-    const serviceOptions = document.querySelectorAll('.service-option');
-    const serviceRadios = document.querySelectorAll('input[name="service_type"]');
-    
-    serviceRadios.forEach(radio => {
-      radio.addEventListener('change', function() {
-        // Remove 'selected' class from all options
-        serviceOptions.forEach(opt => opt.classList.remove('selected'));
-        
-        // Add 'selected' class to parent label of checked radio
-        if (this.checked) {
-          this.closest('.service-option').classList.add('selected');
-        }
-      });
-    });
-    
-    // Allow clicking anywhere on the label to select
-    serviceOptions.forEach(option => {
-      option.addEventListener('click', function(e) {
-        if (e.target.tagName !== 'INPUT') {
-          const radio = this.querySelector('input[type="radio"]');
-          if (radio) {
-            radio.checked = true;
-            radio.dispatchEvent(new Event('change'));
-          }
-        }
-      });
-    });
-  });
-</script>
-
-<!-- Firebase Configuration -->
-<script>
-  // Inject Firebase config from backend
-  window.FIREBASE_CONFIG = {
-    apiKey: "{{ config.FIREBASE_API_KEY }}",
-    authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
-    projectId: "{{ config.FIREBASE_PROJECT_ID }}",
-    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
-    messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
-    appId: "{{ config.FIREBASE_APP_ID }}"
-  };
-</script>
-
-<!-- Firebase SDK (CDN) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-
-<!-- Wizard mode configuration -->
-<script>
-  window.WIZARD_MODE = "{{ mode }}";
-  {% if mode == 'edit' %}
-  window.LISTING_ID = {{ listing.id }};
-  window.UPDATE_URL = "{{ url_for('category1.update_listing', listing_id=listing.id) }}";
-  {% else %}
-  window.CREATE_URL = "{{ url_for('category1.create_listing_submit') }}";
-  {% endif %}
-
-  // Phone configuration for Step 3
-  window.ORIGIN_PHONE_COUNTRY_CODE = "{{ listing.origin_phone_number[:3] if mode == 'edit' and listing.origin_phone_number else '+61' }}";
-  window.ORIGIN_PHONE_LOCAL = "{{ listing.origin_phone_number[3:] if mode == 'edit' and listing.origin_phone_number else '' }}";
-</script>
-
-<!-- Link to external wizard JavaScript -->
-<script src="{{ url_for('static', filename='js/listing_wizard.js') }}"></script>
-
-{% endblock %}
+    <div class="wizard-step" data-step="2">
       <h2 class="step-title">Origin & Destination Details</h2>
       <p class="step-description">Provide pickup and delivery location information</p>
 
@@ -1313,12 +1010,12 @@
             <span class="label-text">Origin Contact Phone *</span>
             <div class="phone-input-group">
               <select name="origin_phone_country_code" class="country-code-select" required>
-                <option value="+61" {% if mode == 'edit' and listing.origin_phone_number.startswith('+61') %}selected{% endif %}>🇦🇺 +61</option>
-                <option value="+1" {% if mode == 'edit' and listing.origin_phone_number.startswith('+1') %}selected{% endif %}>🇺🇸 +1</option>
-                <option value="+44" {% if mode == 'edit' and listing.origin_phone_number.startswith('+44') %}selected{% endif %}>🇬🇧 +44</option>
-                <option value="+880" {% if mode == 'edit' and listing.origin_phone_number.startswith('+880') %}selected{% endif %}>🇧🇩 +880</option>
-                <option value="+91" {% if mode == 'edit' and listing.origin_phone_number.startswith('+91') %}selected{% endif %}>🇮🇳 +91</option>
-                <option value="+86" {% if mode == 'edit' and listing.origin_phone_number.startswith('+86') %}selected{% endif %}>🇨🇳 +86</option>
+                <option value="+61" {% if mode == 'edit' and listing.origin_phone_number and listing.origin_phone_number.startswith('+61') %}selected{% endif %}>🇦🇺 +61</option>
+                <option value="+1" {% if mode == 'edit' and listing.origin_phone_number and listing.origin_phone_number.startswith('+1') %}selected{% endif %}>🇺🇸 +1</option>
+                <option value="+44" {% if mode == 'edit' and listing.origin_phone_number and listing.origin_phone_number.startswith('+44') %}selected{% endif %}>🇬🇧 +44</option>
+                <option value="+880" {% if mode == 'edit' and listing.origin_phone_number and listing.origin_phone_number.startswith('+880') %}selected{% endif %}>🇧🇩 +880</option>
+                <option value="+91" {% if mode == 'edit' and listing.origin_phone_number and listing.origin_phone_number.startswith('+91') %}selected{% endif %}>🇮🇳 +91</option>
+                <option value="+86" {% if mode == 'edit' and listing.origin_phone_number and listing.origin_phone_number.startswith('+86') %}selected{% endif %}>🇨🇳 +86</option>
               </select>
               <input 
                 type="tel" 
@@ -1326,7 +1023,7 @@
                 class="form-input" 
                 placeholder="412345678"
                 pattern="[0-9]{6,15}"
-                value="{% if mode == 'edit' %}{{ listing.origin_phone_number[3:] if listing.origin_phone_number else '' }}{% endif %}"
+                value="{% if mode == 'edit' and listing.origin_phone_number %}{{ listing.origin_phone_number[3:] if listing.origin_phone_number else '' }}{% endif %}"
                 required
               />
             </div>
@@ -1528,20 +1225,61 @@ window.FIREBASE_CONFIG = {
 
 <!-- Wizard mode configuration -->
 <script>
-  window.WIZARD_MODE = "{{ mode }}";
-  {% if mode == 'edit' %}
-  window.LISTING_ID = {{ listing.id }};
-  window.UPDATE_URL = "{{ url_for('category1.update_listing', listing_id=listing.id) }}";
-  {% else %}
-  window.CREATE_URL = "{{ url_for('category1.create_listing_submit') }}";
-  {% endif %}
+window.WIZARD_MODE = "{{ mode }}";
+{% if mode == 'edit' %}
+window.LISTING_ID = {{ listing.id }};
+window.UPDATE_URL = "{{ url_for('category1.update_listing', listing_id=listing.id) }}";
+{% else %}
+window.CREATE_URL = "{{ url_for('category1.create_listing_submit') }}";
+{% endif %}
 </script>
 
-<!-- Link to external wizard JavaScript -->
-<script src="{{ url_for('static', filename='js/listing_wizard.js') }}"></script>
+<!-- ✅ FIREBASE AUTHENTICATION FOR FILE UPLOADS (runs BEFORE wizard JS) -->
+<script>
+(function() {
+  console.log('🔐 Initializing Firebase authentication...');
+  
+  // Wait for Firebase SDK to load
+  if (typeof firebase === 'undefined') {
+    console.error('❌ Firebase SDK not loaded');
+    alert('Firebase SDK failed to load. Please refresh the page.');
+    return;
+  }
 
-{% endblock %}
-<!-- Link to external wizard JavaScript -->
+  // Initialize Firebase app if not already initialized
+  if (!firebase.apps.length) {
+    try {
+      firebase.initializeApp(window.FIREBASE_CONFIG);
+      console.log('✅ Firebase app initialized');
+    } catch (error) {
+      console.error('❌ Firebase initialization failed:', error);
+      alert('Firebase initialization failed. Please check your configuration.');
+      return;
+    }
+  }
+
+  const auth = firebase.auth();
+
+  // Sign in anonymously for file uploads
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      console.log('✅ Firebase authenticated:', user.uid);
+    } else {
+      console.warn('⚠️ No Firebase user - signing in anonymously...');
+      auth.signInAnonymously()
+        .then(() => {
+          console.log('✅ Signed in anonymously for file uploads');
+        })
+        .catch((error) => {
+          console.error('❌ Anonymous sign-in failed:', error);
+          alert('Firebase authentication failed. File uploads may not work. Error: ' + error.message);
+        });
+    }
+  });
+})();
+</script>
+
+<!-- Load wizard JavaScript AFTER Firebase is ready -->
 <script src="{{ url_for('static', filename='js/listing_wizard.js') }}"></script>
 
 {% endblock %}

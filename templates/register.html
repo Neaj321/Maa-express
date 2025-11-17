@@ -980,9 +980,21 @@
     showMessage("Sending verification link...", "");
 
     try {
+      // Get the current origin for the continue URL
+      const baseUrl = window.location.origin;
+      
       const actionCodeSettings = {
-        url: `{{ config.APP_BASE_URL }}verify-email?email=${encodeURIComponent(email)}`,
-        handleCodeInApp: true
+        url: `${baseUrl}/verify-email?email=${encodeURIComponent(email)}`,
+        handleCodeInApp: true,
+        iOS: {
+          bundleId: "{{ config.FIREBASE_PROJECT_ID }}"
+        },
+        android: {
+          packageName: "{{ config.FIREBASE_PROJECT_ID }}",
+          installApp: true,
+          minimumVersion: "12"
+        },
+        dynamicLinkDomain: undefined
       };
 
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);

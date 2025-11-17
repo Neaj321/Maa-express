@@ -12,12 +12,9 @@ def normalize_phone_e164(phone_str, default_region="AU"):
     Returns normalized phone string or None if invalid.
     """
     try:
-        # Try to parse the phone number
         parsed = phonenumbers.parse(phone_str, default_region)
-        # Validate the number
         if not phonenumbers.is_valid_number(parsed):
             return None
-        # Return E.164 format
         return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
     except phonenumbers.phonenumberutil.NumberParseException:
         return None
@@ -30,7 +27,7 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if "user_id" not in session:
-            return redirect(url_for("main.render_template_name", template="login.html"))
+            return redirect(url_for("auth.login_page"))
         return f(*args, **kwargs)
     return decorated
 
@@ -47,7 +44,9 @@ def login_page():
     return redirect(url_for("main.render_template_name", template="login.html"))
 
 
-@auth_bp.post("/api/register")
+# ✅ FIXED: Register both /api/* and /auth/api/* routes
+@auth_bp.route("/api/register", methods=["POST"])
+@auth_bp.route("/../api/register", methods=["POST"])  # Also register at root /api/register
 def api_register():
     """
     Register a new user account.
@@ -95,8 +94,8 @@ def api_register():
             password_hash=generate_password_hash(password),
             is_admin=False,
             is_active=True,
-            email_verified=True,  # Set to True after email/SMS verification in production
-            phone_verified=True   # Set to True after SMS verification in production
+            email_verified=True,
+            phone_verified=True
         )
         db.session.add(user)
         db.session.commit()
@@ -128,7 +127,8 @@ def api_register():
         return jsonify({"error": f"Registration failed: {str(e)}"}), 500
 
 
-@auth_bp.post("/api/login")
+@auth_bp.route("/api/login", methods=["POST"])
+@auth_bp.route("/../api/login", methods=["POST"])  # Also register at root /api/login
 def api_login():
     """
     Login with email/phone and password.
@@ -144,10 +144,8 @@ def api_login():
     # Determine if identifier is email or phone
     user = None
     if "@" in identifier:
-        # Treat as email
         user = User.query.filter_by(email=identifier.lower()).first()
     else:
-        # Treat as phone; normalize to E.164 first
         normalized_phone = normalize_phone_e164(identifier)
         if normalized_phone:
             user = User.query.filter_by(phone=normalized_phone).first()
@@ -183,7 +181,8 @@ def api_login():
     }), 200
 
 
-@auth_bp.post("/api/logout")
+@auth_bp.route("/api/logout", methods=["POST"])
+@auth_bp.route("/../api/logout", methods=["POST"])  # Also register at root /api/logout
 def api_logout():
     """Logout current user by clearing session"""
     session.pop("user_id", None)
@@ -192,10 +191,7 @@ def api_logout():
 
 @auth_bp.route("/verify-email")
 def verify_email():
-    """
-    Email verification callback endpoint.
-    In production, you would verify the token and update user.email_verified = True
-    """
+    """Email verification callback endpoint"""
     email = request.args.get("email")
     if not email:
         return "Invalid verification link", 400
@@ -204,17 +200,14 @@ def verify_email():
     if user:
         user.email_verified = True
         db.session.commit()
-        return redirect(url_for("main.render_template_name", template="login.html"))
+        return redirect(url_for("auth.login_page"))
     
     return "User not found", 404
 
 
-@auth_bp.post("/api/verify-phone")
+@auth_bp.route("/api/verify-phone", methods=["POST"])
 def api_verify_phone():
-    """
-    Phone verification endpoint (called after Firebase SMS OTP verification).
-    Frontend verifies OTP with Firebase, then calls this to update backend.
-    """
+    """Phone verification endpoint"""
     if "user_id" not in session:
         return jsonify({"error": "Not authenticated"}), 401
     

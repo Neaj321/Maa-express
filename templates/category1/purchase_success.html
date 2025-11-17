@@ -1,0 +1,630 @@
+{% extends "base.html" %}
+
+{% block title %}Purchase Complete - Maa Express{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================
+   PURCHASE SUCCESS PAGE STYLES
+   ============================================ */
+.success-container {
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 20px;
+}
+
+/* Success Header */
+.success-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 50px 40px;
+  border-radius: 16px;
+  text-align: center;
+  margin-bottom: 32px;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+}
+
+.success-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  animation: successPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes successPop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.success-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+}
+
+.success-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.95;
+  margin: 0;
+}
+
+/* Verification Codes Section */
+.codes-section {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.codes-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.code-box {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 3px solid #3b82f6;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.code-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+}
+
+.code-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 12px;
+}
+
+.code-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e40af;
+  letter-spacing: 4px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 12px;
+  user-select: all;
+}
+
+.code-copy-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.code-copy-btn:hover {
+  background: #2563eb;
+  transform: scale(1.05);
+}
+
+.code-copy-btn:active {
+  transform: scale(0.98);
+}
+
+.code-copy-btn.copied {
+  background: #10b981;
+}
+
+/* Instructions Box */
+.instructions-box {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 32px;
+}
+
+.instructions-title {
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+}
+
+.instructions-list {
+  color: #78350f;
+  line-height: 1.8;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.instructions-list li {
+  margin-bottom: 8px;
+}
+
+.instructions-list strong {
+  color: #92400e;
+}
+
+/* Order Details Section */
+.order-details {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.order-details-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 12px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.detail-value {
+  font-weight: 600;
+  color: #1f2937;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+/* ✅ UPDATED: Contact visibility styles */
+.contact-visible {
+  display: block !important;
+}
+
+.contact-masked {
+  display: none !important;
+}
+
+.masked-contact {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Actions Section */
+.actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.btn {
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26, 115, 232, 0.4);
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+/* Timeline Section */
+.timeline {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.timeline-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 24px;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-left: 3px solid #e5e7eb;
+  padding-left: 24px;
+  position: relative;
+}
+
+.timeline-item:before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 20px;
+  width: 15px;
+  height: 15px;
+  background: white;
+  border: 3px solid #10b981;
+  border-radius: 50%;
+}
+
+.timeline-item.completed:before {
+  background: #10b981;
+}
+
+.timeline-item.pending:before {
+  background: white;
+  border-color: #d1d5db;
+}
+
+.timeline-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-step {
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.timeline-description {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.timeline-status {
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.timeline-status.completed {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.timeline-status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .success-container {
+    padding: 10px;
+    margin: 20px auto;
+  }
+
+  .success-header {
+    padding: 40px 20px;
+  }
+
+  .success-icon {
+    font-size: 4rem;
+  }
+
+  .success-title {
+    font-size: 2rem;
+  }
+
+  .success-subtitle {
+    font-size: 1rem;
+  }
+
+  .codes-section,
+  .order-details,
+  .timeline {
+    padding: 24px 16px;
+  }
+
+  .code-value {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+  <!-- Success Header -->
+  <div class="success-header">
+    <div class="success-icon">✅</div>
+    <h1 class="success-title">Payment Successful!</h1>
+    <p class="success-subtitle">Your purchase has been confirmed</p>
+  </div>
+
+  <!-- Verification Codes Section -->
+  <div class="codes-section">
+    <h2 class="codes-title">🔐 Your Verification Codes</h2>
+
+    <!-- Handover Code -->
+    <div class="code-box">
+      <span class="code-label">🔑 Handover Code (Give to Seller at Origin)</span>
+      <div class="code-value" id="handover-code">{{ buyer_info.handover_code }}</div>
+      <button class="code-copy-btn" onclick="copyToClipboard('handover-code')">
+        📋 Copy Code
+      </button>
+    </div>
+
+    <!-- Delivery Code -->
+    <div class="code-box">
+      <span class="code-label">🎯 Delivery Code (For Receiver at Destination)</span>
+      <div class="code-value" id="delivery-code">{{ buyer_info.delivery_code }}</div>
+      <button class="code-copy-btn" onclick="copyToClipboard('delivery-code')">
+        📋 Copy Code
+      </button>
+    </div>
+  </div>
+
+  <!-- Important Instructions -->
+  <div class="instructions-box">
+    <div class="instructions-title">
+      <span>⚠️</span>
+      <span>IMPORTANT: How to Use Your Codes</span>
+    </div>
+    <ul class="instructions-list">
+      <li><strong>Handover Code:</strong> Share this with the <strong>seller at origin</strong> when you physically hand over your parcel. The seller will verify this code to confirm receipt.</li>
+      <li><strong>Delivery Code:</strong> Share this with your <strong>receiver at destination</strong>. They will give this to the seller when collecting the parcel.</li>
+      <li><strong>Security:</strong> Only share these codes with authorized people. Do not post publicly or share on social media.</li>
+      <li><strong>Keep Safe:</strong> Save these codes in a secure location. You can also find them in your account dashboard.</li>
+    </ul>
+  </div>
+
+  <!-- Order Timeline -->
+  <div class="timeline">
+    <h3 class="timeline-title">📍 Order Timeline</h3>
+
+    <!-- Step 1: Payment Complete -->
+    <div class="timeline-item completed">
+      <div class="timeline-icon">💳</div>
+      <div class="timeline-content">
+        <div class="timeline-step">1. Payment Complete</div>
+        <div class="timeline-description">
+          Your payment has been successfully processed
+        </div>
+        <span class="timeline-status completed">✓ Completed</span>
+      </div>
+    </div>
+
+    <!-- Step 2: Documents Uploaded -->
+    <div class="timeline-item completed">
+      <div class="timeline-icon">📄</div>
+      <div class="timeline-content">
+        <div class="timeline-step">2. Documents Uploaded</div>
+        <div class="timeline-description">
+          {% if buyer_info.sender_id_url %}
+            Identity document verified
+          {% else %}
+            Pending document upload
+          {% endif %}
+        </div>
+        <span class="timeline-status completed">✓ Completed</span>
+      </div>
+    </div>
+
+    <!-- Step 3: Handover Pending -->
+    <div class="timeline-item pending">
+      <div class="timeline-icon">🤝</div>
+      <div class="timeline-content">
+        <div class="timeline-step">3. Handover at Origin</div>
+        <div class="timeline-description">
+          Hand over your parcel to the seller at {{ listing.origin }} and provide the handover code
+        </div>
+        <span class="timeline-status pending">⏳ Pending</span>
+      </div>
+    </div>
+
+    <!-- Step 4: In Transit -->
+    <div class="timeline-item pending">
+      <div class="timeline-icon">✈️</div>
+      <div class="timeline-content">
+        <div class="timeline-step">4. In Transit</div>
+        <div class="timeline-description">
+          Seller will carry your parcel on flight from {{ listing.origin }} to {{ listing.destination }}
+        </div>
+        <span class="timeline-status pending">⏳ Pending</span>
+      </div>
+    </div>
+
+    <!-- Step 5: Delivery -->
+    <div class="timeline-item pending">
+      <div class="timeline-icon">📦</div>
+      <div class="timeline-content">
+        <div class="timeline-step">5. Delivery at Destination</div>
+        <div class="timeline-description">
+          Your receiver will collect the parcel at {{ listing.destination }} using the delivery code
+        </div>
+        <span class="timeline-status pending">⏳ Pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Details -->
+  <div class="order-details">
+    <h3 class="order-details-title">📦 Order Details</h3>
+
+    <div class="detail-row">
+      <span class="detail-label">Order ID:</span>
+      <span class="detail-value">#{{ buyer_info.id }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Route:</span>
+      <span class="detail-value">{{ listing.origin }} → {{ listing.destination }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Travel Date:</span>
+      <span class="detail-value">{{ listing.travel_date.strftime('%d %B %Y') }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Weight:</span>
+      <span class="detail-value">{{ buyer_info.purchased_weight }} kg</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Total Paid:</span>
+      <span class="detail-value">{{ listing.currency }} ${{ "%.2f"|format(buyer_info.purchase_price) }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Receiver Name:</span>
+      <span class="detail-value">{{ buyer_info.receiver_fullname }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Delivery Address:</span>
+      <span class="detail-value">{{ buyer_info.delivery_address }}, {{ buyer_info.delivery_country }}</span>
+    </div>
+  </div>
+
+  <!-- ✅ UPDATED: Seller Contact Info (Only visible after payment) -->
+  <div class="order-details {% if seller_contact_visible %}contact-visible{% else %}contact-masked{% endif %}">
+    <h3 class="order-details-title">📞 Seller Contact Information</h3>
+    
+    {% if seller_contact_visible %}
+      <!-- ✅ SHOW FULL CONTACT (payment completed) -->
+      <div class="detail-row">
+        <span class="detail-label">Seller Name:</span>
+        <span class="detail-value">{{ seller.full_name }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Origin Phone:</span>
+        <span class="detail-value">{{ listing.origin_phone_number }}</span>
+      </div>
+
+      {% if listing.destination_phone_number %}
+      <div class="detail-row">
+        <span class="detail-label">Destination Phone:</span>
+        <span class="detail-value">{{ listing.destination_phone_number }}</span>
+      </div>
+      {% endif %}
+
+      <div class="detail-row">
+        <span class="detail-label">Email:</span>
+        <span class="detail-value">{{ seller.email }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Contact Visibility:</span>
+        <span class="detail-value" style="color: #10b981;">✓ Full contact visible (payment verified)</span>
+      </div>
+    {% else %}
+      <!-- ✅ MASKED CONTACT (should never happen on success page, but fallback) -->
+      <div class="detail-row">
+        <span class="detail-label">Contact Status:</span>
+        <span class="detail-value masked-contact">Contact details will be available after payment verification</span>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <a href="{{ url_for('account.account') }}" class="btn btn-primary">View My Purchases</a>
+    <a href="{{ url_for('category1.marketplace') }}" class="btn btn-secondary">Browse More Listings</a>
+  </div>
+</div>
+
+<script>
+// Copy to clipboard function
+function copyToClipboard(elementId) {
+  const element = document.getElementById(elementId);
+  const text = element.textContent;
+  
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    const originalText = btn.textContent;
+    
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(err => {
+    console.error('Failed to copy:', err);
+    alert('Failed to copy code. Please copy manually.');
+  });
+}
+
+// Print page function (optional)
+function printPage() {
+  window.print();
+}
+
+// Show success animation on load
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('✅ Purchase success page loaded');
+  console.log('Order ID:', '{{ buyer_info.id }}');
+  console.log('Handover Code:', '{{ buyer_info.handover_code }}');
+  console.log('Delivery Code:', '{{ buyer_info.delivery_code }}');
+  console.log('Seller Contact Visible:', {{ seller_contact_visible|tojson }});
+});
+</script>
+{% endblock %}

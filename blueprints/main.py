@@ -6,6 +6,7 @@ from sqlalchemy import or_, and_
 main_bp = Blueprint("main", __name__)
 
 
+# Find line ~9-16 (track_visit function):
 @main_bp.before_app_request
 def track_visit():
     """Track page visits for analytics"""
@@ -18,9 +19,11 @@ def track_visit():
         from models import db
         db.session.add(visit)
         db.session.commit()
-    except:
-        pass
-
+    except Exception as e:
+        # ✅ ADD ROLLBACK TO PREVENT SESSION ERRORS
+        from models import db
+        db.session.rollback()
+        print(f"⚠️ Failed to track visit: {e}")
 
 @main_bp.app_context_processor
 def inject_current_user():

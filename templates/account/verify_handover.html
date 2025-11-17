@@ -1,0 +1,737 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Handover - Maa Express{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================
+   VERIFY HANDOVER PAGE STYLES
+   ============================================ */
+.verify-container {
+  max-width: 700px;
+  margin: 60px auto;
+  padding: 20px;
+}
+
+.verify-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.verify-header {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 32px;
+  text-align: center;
+}
+
+.verify-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.verify-header h1 {
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.verify-header p {
+  margin: 0;
+  opacity: 0.95;
+  font-size: 1.1rem;
+}
+
+.verify-body {
+  padding: 32px;
+}
+
+/* Order Summary */
+.order-summary {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.summary-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: #1f2937;
+  text-align: right;
+}
+
+/* ✅ NEW: Buyer Contact Visibility Styles */
+.buyer-contact-section {
+  background: #ecfdf5;
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.buyer-contact-section h3 {
+  color: #047857;
+  font-size: 1.1rem;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-visible {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.contact-masked {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.contact-notice {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #92400e;
+}
+
+/* Warning Box */
+.warning-box {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.warning-box strong {
+  color: #92400e;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.warning-box ul {
+  margin: 8px 0 0 20px;
+  color: #92400e;
+  line-height: 1.8;
+  font-size: 0.9rem;
+}
+
+.warning-box li {
+  margin-bottom: 6px;
+}
+
+/* Message Display */
+.message {
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+  display: none;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #dc2626;
+  border-left: 4px solid #dc2626;
+}
+
+.message.success {
+  background: #d1fae5;
+  color: #047857;
+  border-left: 4px solid #047857;
+}
+
+.message.info {
+  background: #dbeafe;
+  color: #1e40af;
+  border-left: 4px solid #1e40af;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.form-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* File Upload (Optional Photo) */
+.file-upload-label {
+  display: block;
+  background: #f3f4f6;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.file-upload-label:hover {
+  background: #e0edff;
+  border-color: #1557b0;
+  transform: translateY(-2px);
+}
+
+.file-upload-label:active {
+  transform: translateY(0);
+}
+
+.upload-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.upload-text {
+  color: #1e40af;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.upload-hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.file-upload-input {
+  display: none;
+}
+
+.file-name {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: #059669;
+  font-weight: 600;
+  padding: 8px 12px;
+  background: #d1fae5;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Buttons */
+.btn-verify-submit {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-verify-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+.btn-verify-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-cancel {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  margin-top: 12px;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+/* Loading State */
+.btn-verify-submit.loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn-verify-submit.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  border: 3px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .verify-container {
+    padding: 10px;
+    margin: 20px auto;
+  }
+
+  .verify-header {
+    padding: 24px 16px;
+  }
+
+  .verify-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .verify-body {
+    padding: 20px 16px;
+  }
+
+  .summary-row {
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 0;
+  }
+
+  .summary-value {
+    text-align: left;
+  }
+
+  .form-input {
+    font-size: 1rem;
+    letter-spacing: 3px;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="verify-container">
+  <div class="verify-card">
+    <!-- Header -->
+    <div class="verify-header">
+      <div class="verify-icon">🔑</div>
+      <h1>Verify Handover at Origin</h1>
+      <p>Confirm parcel collection from buyer</p>
+    </div>
+
+    <!-- Body -->
+    <div class="verify-body">
+      <!-- Order Summary -->
+      <div class="order-summary">
+        <h3 class="summary-title">Order Details</h3>
+        
+        <div class="summary-row">
+          <span class="summary-label">Order ID:</span>
+          <span class="summary-value">#{{ buyer_info.id }}</span>
+        </div>
+        
+        <div class="summary-row">
+          <span class="summary-label">Route:</span>
+          <span class="summary-value">{{ listing.origin }} → {{ listing.destination }}</span>
+        </div>
+        
+        <div class="summary-row">
+          <span class="summary-label">Weight:</span>
+          <span class="summary-value">{{ buyer_info.purchased_weight }} kg</span>
+        </div>
+        
+        <div class="summary-row">
+          <span class="summary-label">Receiver:</span>
+          <span class="summary-value">{{ buyer_info.receiver_fullname }}</span>
+        </div>
+        
+        <div class="summary-row">
+          <span class="summary-label">Status:</span>
+          <span class="summary-value" style="color: #f59e0b; text-transform: capitalize;">
+            {{ buyer_info.status.replace('_', ' ') }}
+          </span>
+        </div>
+      </div>
+
+      <!-- ✅ NEW: Buyer Contact Information (visible after payment) -->
+      <div class="buyer-contact-section">
+        <h3>
+          <span>📞</span>
+          <span>Buyer Contact Information</span>
+        </h3>
+        
+        {% if buyer_contact_visible %}
+          <!-- ✅ SHOW FULL CONTACT (payment completed) -->
+          <div class="summary-row">
+            <span class="summary-label">Buyer Name:</span>
+            <span class="summary-value contact-visible">{{ buyer_info.receiver_fullname }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">Buyer Phone:</span>
+            <span class="summary-value contact-visible">{{ buyer_info.receiver_phone }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">Buyer Email:</span>
+            <span class="summary-value contact-visible">{{ buyer_info.receiver_email }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">Delivery Address:</span>
+            <span class="summary-value contact-visible">
+              {{ buyer_info.delivery_address }}, {{ buyer_info.delivery_postcode }}, {{ buyer_info.delivery_country }}
+            </span>
+          </div>
+
+          <div class="contact-notice" style="background: #d1fae5; border-color: #10b981;">
+            <strong style="color: #047857;">✓ Contact Verified:</strong> Payment completed. You can now contact the buyer to arrange handover.
+          </div>
+        {% else %}
+          <!-- ✅ MASKED CONTACT (payment not completed - fallback) -->
+          <div class="summary-row">
+            <span class="summary-label">Contact Status:</span>
+            <span class="summary-value contact-masked">Contact details pending payment verification</span>
+          </div>
+
+          <div class="contact-notice">
+            <strong>⚠️ Payment Pending:</strong> Buyer contact details will be visible after payment verification.
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Warning -->
+      <div class="warning-box">
+        <strong>⚠️ Important Instructions:</strong>
+        <ul>
+          <li>Only enter the handover code <strong>AFTER</strong> physically receiving the parcel from the buyer</li>
+          <li>Verify the parcel contents match the description</li>
+          <li>Check parcel weight and condition</li>
+          <li>Take a photo for proof (optional but recommended)</li>
+          <li>You have maximum 5 attempts. Exceeding this will mark the order as disputed</li>
+        </ul>
+      </div>
+
+      <!-- Message Display -->
+      <div id="message" class="message"></div>
+
+      <!-- Verification Form -->
+      <form id="verify-form">
+        <!-- Handover Code Input -->
+        <div class="form-group">
+          <label class="form-label" for="handover-code-input">
+            Enter Handover Code *
+          </label>
+          <input 
+            type="text" 
+            id="handover-code-input" 
+            class="form-input"
+            placeholder="XXXXXX"
+            maxlength="6"
+            required
+            autocomplete="off"
+          />
+          <span class="form-hint">
+            The buyer will provide this 6-character code when handing over the parcel
+          </span>
+        </div>
+
+        <!-- Optional Photo Upload -->
+        <div class="form-group">
+          <label class="form-label">Handover Photo (Optional)</label>
+          <label for="photo-upload" class="file-upload-label">
+            <span class="upload-icon">📷</span>
+            <div class="upload-text">Click to upload handover photo</div>
+            <div class="upload-hint">Max 5MB • JPG, PNG, or WEBP</div>
+          </label>
+          <input 
+            type="file" 
+            id="photo-upload"
+            class="file-upload-input"
+            accept="image/jpeg,image/png,image/webp"
+          />
+          <div id="file-name" class="file-name" style="display: none;"></div>
+          <input type="hidden" id="photo-url" name="photo_url" />
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-btn" class="btn-verify-submit">
+          Verify Handover & Confirm Collection
+        </button>
+      </form>
+
+      <!-- Cancel Button -->
+      <a href="{{ url_for('account.sales_dashboard') }}" class="btn-cancel">
+        ← Cancel & Return to Sales Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK (for photo upload) -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js';
+  import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js';
+
+  // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "{{ config.FIREBASE_API_KEY }}",
+    authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+    projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+    messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
+    appId: "{{ config.FIREBASE_APP_ID }}"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+
+  let uploadedPhotoUrl = null;
+
+  // File upload handler
+  document.getElementById('photo-upload').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileNameDiv = document.getElementById('file-name');
+    const messageDiv = document.getElementById('message');
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showMessage('File too large. Maximum size is 5MB.', 'error');
+      return;
+    }
+
+    // Validate file type
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      showMessage('Invalid file type. Please upload JPG, PNG, or WEBP.', 'error');
+      return;
+    }
+
+    try {
+      showMessage('Uploading photo...', 'info');
+
+      const buyerInfoId = "{{ buyer_info.id }}";
+      const timestamp = Date.now();
+      const storagePath = `category1_handover/${buyerInfoId}/handover_${timestamp}_${file.name}`;
+
+      const storageRef = ref(storage, storagePath);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          showMessage(`Uploading: ${Math.round(progress)}%`, 'info');
+        },
+        (error) => {
+          console.error('Upload error:', error);
+          showMessage(`Upload failed: ${error.message}`, 'error');
+        },
+        async () => {
+          try {
+            uploadedPhotoUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            document.getElementById('photo-url').value = uploadedPhotoUrl;
+            
+            fileNameDiv.textContent = `✓ ${file.name} uploaded successfully`;
+            fileNameDiv.style.display = 'inline-block';
+            
+            showMessage('Photo uploaded successfully!', 'success');
+          } catch (error) {
+            console.error('Error getting download URL:', error);
+            showMessage(`Failed to get file URL: ${error.message}`, 'error');
+          }
+        }
+      );
+
+    } catch (error) {
+      console.error('Upload error:', error);
+      showMessage(`Upload failed: ${error.message}`, 'error');
+    }
+  });
+
+  // Form submission
+  document.getElementById('verify-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const codeInput = document.getElementById('handover-code-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const messageDiv = document.getElementById('message');
+
+    const code = codeInput.value.trim().toUpperCase();
+
+    if (!code || code.length !== 6) {
+      showMessage('Please enter a valid 6-character handover code', 'error');
+      codeInput.focus();
+      return;
+    }
+
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    submitBtn.textContent = '';
+
+    try {
+      const response = await fetch("{{ url_for('category1.verify_handover', buyer_info_id=buyer_info.id) }}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          handover_code: code,
+          photo_url: uploadedPhotoUrl || null
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Verification failed');
+      }
+
+      // Success
+      showMessage(data.message || '✓ Handover verified successfully!', 'success');
+      
+      // Redirect after 2 seconds
+      setTimeout(() => {
+        window.location.href = '{{ url_for("account.sales_dashboard") }}';
+      }, 2000);
+
+    } catch (error) {
+      console.error('❌ Verification error:', error);
+      showMessage(error.message, 'error');
+      
+      // Re-enable submit button
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+      submitBtn.textContent = 'Verify Handover & Confirm Collection';
+      
+      // Focus code input for retry
+      codeInput.select();
+    }
+  });
+
+  // Show message helper
+  function showMessage(text, type) {
+    const messageDiv = document.getElementById('message');
+    messageDiv.textContent = text;
+    messageDiv.className = `message ${type}`;
+    messageDiv.style.display = 'block';
+
+    // Auto-hide after 5 seconds for error messages
+    if (type === 'error') {
+      setTimeout(() => {
+        messageDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    // Scroll message into view
+    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Prevent accidental navigation
+  let formSubmitted = false;
+  document.getElementById('verify-form').addEventListener('submit', () => {
+    formSubmitted = true;
+  });
+
+  window.addEventListener('beforeunload', (e) => {
+    const codeInput = document.getElementById('handover-code-input');
+    if (!formSubmitted && codeInput.value.length > 0) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+</script>
+{% endblock %}

@@ -93,12 +93,11 @@
   padding: 12px;
   background: #f9fafb;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
 }
 
 .detail-icon {
+  font-size: 1.5rem;
   margin-right: 12px;
-  font-size: 1.4rem;
 }
 
 .detail-content {
@@ -108,6 +107,7 @@
 .detail-label {
   font-size: 0.85rem;
   color: #6b7280;
+  font-weight: 600;
   margin-bottom: 4px;
 }
 
@@ -117,114 +117,26 @@
   font-weight: 600;
 }
 
-.description-text {
-  color: #4b5563;
-  line-height: 1.7;
-  white-space: pre-wrap;
+/* ✅ NEW: Contact masking styles */
+.contact-masked {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.9rem;
 }
 
-.weight-selector-section {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  padding: 24px;
-  border-radius: 12px;
-  border: 2px solid #1a73e8;
-  margin-bottom: 24px;
-}
-
-.weight-selector-title {
-  font-size: 1.2rem;
+.contact-visible {
   color: #1f2937;
-  margin-bottom: 16px;
-  font-weight: 700;
-}
-
-.weight-input-group {
-  margin-bottom: 16px;
-}
-
-.weight-input-label {
-  display: block;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.weight-input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #1a73e8;
-  border-radius: 8px;
-  font-size: 1rem;
   font-weight: 600;
 }
 
-.weight-input:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
-}
-
-.weight-hint {
-  font-size: 0.85rem;
-  color: #6b7280;
-  margin-top: 4px;
-}
-
-.weight-quick-select {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.weight-quick-btn {
-  padding: 8px;
-  background: white;
-  border: 2px solid #1a73e8;
+.masked-notice {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 12px 16px;
   border-radius: 6px;
-  font-weight: 600;
-  color: #1a73e8;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.weight-quick-btn:hover {
-  background: #1a73e8;
-  color: white;
-}
-
-.price-breakdown {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  margin-top: 16px;
-}
-
-.price-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 0;
-  font-size: 1rem;
-}
-
-.price-label {
-  color: #6b7280;
-}
-
-.price-value {
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.price-row.total {
-  border-top: 2px solid #1a73e8;
-  margin-top: 12px;
-  padding-top: 16px;
-  font-size: 1.3rem;
-}
-
-.price-row.total .price-value {
-  color: #1a73e8;
-  font-size: 1.5rem;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #92400e;
 }
 
 .sidebar {
@@ -232,79 +144,141 @@
   top: 20px;
 }
 
-.contact-card {
+.price-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  margin-bottom: 24px;
+}
+
+.price-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.price-value {
+  font-size: 2rem;
+  color: #1a73e8;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.price-unit {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.discount-badge {
+  display: inline-block;
+  background: #10b981;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.buy-button {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-top: 16px;
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+}
+
+.buy-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+.seller-card {
   background: white;
   padding: 24px;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
 
+.seller-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.seller-avatar {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  font-weight: 700;
+}
+
+.seller-info {
+  flex: 1;
+}
+
+.seller-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.seller-status {
+  font-size: 0.85rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.seller-contact {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+}
+
 .contact-item {
   display: flex;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.contact-item:last-child {
-  border-bottom: none;
+  gap: 12px;
+  padding: 8px 0;
 }
 
 .contact-icon {
-  margin-right: 12px;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
 }
 
-.contact-text {
-  font-size: 0.95rem;
-  color: #4b5563;
-}
-
-.buy-now-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s;
-  margin-top: 16px;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.buy-now-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-}
-
-.buy-now-btn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.btn-icon {
-  margin-right: 8px;
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
   .content-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .sidebar {
     position: static;
   }
-  
+
   .detail-grid {
     grid-template-columns: 1fr;
   }
-  
-  .weight-quick-select {
-    grid-template-columns: repeat(2, 1fr);
+
+  .route-city {
+    font-size: 1.5rem;
   }
 }
 </style>
@@ -327,7 +301,7 @@
       <span class="route-city">{{ listing.destination }}</span>
     </div>
     <div class="travel-info">
-      📅 {{ listing.travel_date.strftime('%A, %d %B %Y') }}
+      📅 {{ listing.travel_date.strftime('%d %B %Y') }}
     </div>
   </div>
 
@@ -335,224 +309,224 @@
   <div class="content-grid">
     <!-- Main Content -->
     <div class="main-content">
-      <!-- Route Details -->
-      <div class="section">
-        <h2 class="section-title">Route Details</h2>
+      <!-- Description -->
+      <section class="section">
+        <h2 class="section-title">📝 Description</h2>
+        <p>{{ listing.description or 'No description provided.' }}</p>
+      </section>
+
+      <!-- Service Details -->
+      <section class="section">
+        <h2 class="section-title">🛄 Service Details</h2>
         <div class="detail-grid">
           <div class="detail-item">
-            <span class="detail-icon">🛫</span>
+            <span class="detail-icon">📦</span>
             <div class="detail-content">
-              <div class="detail-label">Origin Airport</div>
-              <div class="detail-value">{{ listing.origin_airport }}</div>
+              <div class="detail-label">Service Type</div>
+              <div class="detail-value">{{ listing.service_type }}</div>
             </div>
           </div>
 
           <div class="detail-item">
-            <span class="detail-icon">🛬</span>
+            <span class="detail-icon">⚖️</span>
             <div class="detail-content">
-              <div class="detail-label">Destination Airport</div>
-              <div class="detail-value">{{ listing.destination_airport }}</div>
+              <div class="detail-label">Available Weight</div>
+              <div class="detail-value">{{ listing.total_weight }} kg</div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-icon">💰</span>
+            <div class="detail-content">
+              <div class="detail-label">Price per kg</div>
+              <div class="detail-value">{{ listing.currency }} ${{ "%.2f"|format(listing.price_per_kg) }}</div>
+            </div>
+          </div>
+
+          {% if listing.discount_percent and listing.discount_percent > 0 %}
+          <div class="detail-item">
+            <span class="detail-icon">🏷️</span>
+            <div class="detail-content">
+              <div class="detail-label">Discount</div>
+              <div class="detail-value">{{ listing.discount_percent }}% OFF</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Origin Details -->
+      <section class="section">
+        <h2 class="section-title">🛫 Origin Details</h2>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-icon">📍</span>
+            <div class="detail-content">
+              <div class="detail-label">Origin City</div>
+              <div class="detail-value">{{ listing.origin }}</div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-icon">✈️</span>
+            <div class="detail-content">
+              <div class="detail-label">Airport</div>
+              <div class="detail-value">{{ listing.origin_airport }}</div>
             </div>
           </div>
 
           {% if listing.origin_delivery_location %}
           <div class="detail-item">
-            <span class="detail-icon">📍</span>
+            <span class="detail-icon">🚗</span>
             <div class="detail-content">
-              <div class="detail-label">Origin Pickup</div>
+              <div class="detail-label">Pickup Location</div>
               <div class="detail-value">{{ listing.origin_delivery_location }}</div>
             </div>
           </div>
           {% endif %}
 
-          {% if listing.destination_delivery_location %}
+          <div class="detail-item">
+            <span class="detail-icon">📞</span>
+            <div class="detail-content">
+              <div class="detail-label">Origin Contact</div>
+              <!-- ✅ UPDATED: Contact masking logic -->
+              {% if seller_contact_visible %}
+                <div class="detail-value contact-visible">{{ listing.origin_phone_number }}</div>
+              {% else %}
+                <div class="detail-value contact-masked">Hidden (Pay to view)</div>
+                <div class="masked-notice">
+                  💡 Contact details will be visible after payment
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Destination Details -->
+      <section class="section">
+        <h2 class="section-title">🛬 Destination Details</h2>
+        <div class="detail-grid">
           <div class="detail-item">
             <span class="detail-icon">📍</span>
             <div class="detail-content">
-              <div class="detail-label">Destination Delivery</div>
+              <div class="detail-label">Destination City</div>
+              <div class="detail-value">{{ listing.destination }}</div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-icon">✈️</span>
+            <div class="detail-content">
+              <div class="detail-label">Airport</div>
+              <div class="detail-value">{{ listing.destination_airport }}</div>
+            </div>
+          </div>
+
+          {% if listing.destination_delivery_location %}
+          <div class="detail-item">
+            <span class="detail-icon">🚗</span>
+            <div class="detail-content">
+              <div class="detail-label">Delivery Location</div>
               <div class="detail-value">{{ listing.destination_delivery_location }}</div>
             </div>
           </div>
           {% endif %}
+
+          {% if listing.destination_phone_number %}
+          <div class="detail-item">
+            <span class="detail-icon">📞</span>
+            <div class="detail-content">
+              <div class="detail-label">Destination Contact</div>
+              <!-- ✅ UPDATED: Contact masking logic -->
+              {% if seller_contact_visible %}
+                <div class="detail-value contact-visible">{{ listing.destination_phone_number }}</div>
+              {% else %}
+                <div class="detail-value contact-masked">Hidden (Pay to view)</div>
+                <div class="masked-notice">
+                  💡 Contact details will be visible after payment
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
         </div>
-      </div>
-
-      <!-- Weight Selector -->
-      <div class="section">
-        <div class="weight-selector-section">
-          <h3 class="weight-selector-title">📦 Select Weight You Need</h3>
-          
-          <div class="weight-input-group">
-            <label class="weight-input-label">Weight (kg)</label>
-            <input 
-              type="number" 
-              id="selected-weight" 
-              class="weight-input" 
-              min="0.1" 
-              max="{{ listing.total_weight }}" 
-              step="0.1" 
-              value="{{ listing.total_weight }}"
-              placeholder="Enter weight"
-            />
-            <div class="weight-hint">Maximum available: {{ listing.total_weight }} kg</div>
-          </div>
-
-          <!-- Quick Select Buttons -->
-          <div class="weight-quick-select">
-            <button class="weight-quick-btn" onclick="setWeight(5)">5 kg</button>
-            <button class="weight-quick-btn" onclick="setWeight(10)">10 kg</button>
-            <button class="weight-quick-btn" onclick="setWeight(15)">15 kg</button>
-            <button class="weight-quick-btn" onclick="setWeight({{ listing.total_weight }})">Max</button>
-          </div>
-
-          <!-- Dynamic Price Breakdown -->
-          <div class="price-breakdown">
-            <div class="price-row">
-              <span class="price-label">Price per kg:</span>
-              <span class="price-value">{{ listing.currency }} {{ listing.price_per_kg }}</span>
-            </div>
-            <div class="price-row">
-              <span class="price-label">Selected weight:</span>
-              <span class="price-value" id="display-weight">{{ listing.total_weight }} kg</span>
-            </div>
-            <div class="price-row">
-              <span class="price-label">Base price:</span>
-              <span class="price-value" id="display-base-price">{{ listing.currency }} {{ listing.base_price }}</span>
-            </div>
-            {% if listing.discount_percent > 0 %}
-            <div class="price-row">
-              <span class="price-label">Discount ({{ listing.discount_percent }}%):</span>
-              <span class="price-value" id="display-discount">-{{ listing.currency }} 0</span>
-            </div>
-            {% endif %}
-            <div class="price-row total">
-              <span class="price-label">Total Price:</span>
-              <span class="price-value" id="display-total-price">{{ listing.currency }} {{ listing.final_price }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Buy Now Button -->
-        <button class="buy-now-btn" id="buy-now-btn" onclick="proceedToBuy()">
-          <span class="btn-icon">🛒</span>
-          Buy Now
-        </button>
-      </div>
-
-      <!-- Description -->
-      {% if listing.description %}
-      <div class="section">
-        <h2 class="section-title">Description</h2>
-        <p class="description-text">{{ listing.description }}</p>
-      </div>
-      {% endif %}
+      </section>
     </div>
 
     <!-- Sidebar -->
     <div class="sidebar">
-      <!-- Contact Information -->
-      <div class="contact-card">
-        <h3 class="section-title">Contact Seller</h3>
-        
-        <div class="contact-item">
-          <span class="contact-icon">📞</span>
-          <div class="contact-text">
-            <strong>Origin Phone:</strong><br>
-            {{ listing.origin_phone_number }}
-          </div>
+      <!-- Price Card -->
+      <div class="price-card">
+        <div class="price-label">Starting from</div>
+        <div class="price-value">
+          {{ listing.currency }} ${{ "%.2f"|format(listing.price_per_kg) }}
         </div>
+        <div class="price-unit">per kilogram</div>
 
-        {% if listing.destination_phone_number %}
-        <div class="contact-item">
-          <span class="contact-icon">📱</span>
-          <div class="contact-text">
-            <strong>Destination Phone:</strong><br>
-            {{ listing.destination_phone_number }}
-          </div>
-        </div>
+        {% if listing.discount_percent and listing.discount_percent > 0 %}
+        <span class="discount-badge">🎉 {{ listing.discount_percent }}% OFF</span>
         {% endif %}
 
-        <div class="contact-item">
-          <span class="contact-icon">👤</span>
-          <div class="contact-text">
-            <strong>Seller:</strong><br>
-            {{ listing.user.full_name if listing.user.full_name else listing.user.email }}
+        {% if session.user_id %}
+          {% if listing.seller_id != session.user_id %}
+            <a href="{{ url_for('category1.buy_form', listing_id=listing.id) }}" class="buy-button">
+              🛒 Book Now
+            </a>
+          {% else %}
+            <button class="buy-button" disabled style="opacity: 0.5; cursor: not-allowed;">
+              Cannot book own listing
+            </button>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('auth.login_page') }}" class="buy-button">
+            🔐 Login to Book
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Seller Card -->
+      <div class="seller-card">
+        <div class="seller-header">
+          <div class="seller-avatar">
+            {{ listing.seller.full_name[0].upper() if listing.seller and listing.seller.full_name else 'S' }}
           </div>
+          <div class="seller-info">
+            <div class="seller-name">
+              {{ listing.seller.full_name if listing.seller else 'Seller' }}
+            </div>
+            <div class="seller-status">✓ Verified Traveler</div>
+          </div>
+        </div>
+
+        <div class="seller-contact">
+          <h4 style="margin: 0 0 12px 0; font-size: 1rem; color: #1f2937;">Contact Information</h4>
+
+          <!-- ✅ UPDATED: Email always visible -->
+          <div class="contact-item">
+            <span class="contact-icon">📧</span>
+            <span class="contact-visible">{{ listing.seller.email if listing.seller else 'Not available' }}</span>
+          </div>
+
+          <!-- ✅ UPDATED: Phone masked until payment -->
+          <div class="contact-item">
+            <span class="contact-icon">📞</span>
+            {% if seller_contact_visible %}
+              <span class="contact-visible">{{ listing.origin_phone_number }}</span>
+            {% else %}
+              <span class="contact-masked">Hidden (Pay to view)</span>
+            {% endif %}
+          </div>
+
+          <!-- ✅ NEW: Visibility status indicator -->
+          {% if not seller_contact_visible %}
+          <div style="margin-top: 12px; padding: 10px; background: #fef3c7; border-radius: 6px; font-size: 0.85rem; color: #92400e;">
+            💡 <strong>Full contact details</strong> will be revealed after payment confirmation
+          </div>
+          {% endif %}
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<script>
-// Dynamic Pricing Calculator
-const pricePerKg = parseFloat("{{ listing.price_per_kg }}");
-const maxWeight = parseFloat("{{ listing.total_weight }}");
-const discountPercent = parseFloat("{{ listing.discount_percent }}");
-const currency = "{{ listing.currency }}";
-const listingId = {{ listing.id }};
-
-const weightInput = document.getElementById('selected-weight');
-const displayWeight = document.getElementById('display-weight');
-const displayBasePrice = document.getElementById('display-base-price');
-const displayDiscount = document.getElementById('display-discount');
-const displayTotalPrice = document.getElementById('display-total-price');
-const buyNowBtn = document.getElementById('buy-now-btn');
-
-function updatePrice() {
-  const selectedWeight = parseFloat(weightInput.value) || 0;
-  
-  // Validate weight
-  if (selectedWeight > maxWeight) {
-    weightInput.value = maxWeight;
-    return updatePrice();
-  }
-  
-  if (selectedWeight < 0.1) {
-    weightInput.value = 0.1;
-    return updatePrice();
-  }
-
-  // Calculate prices
-  const basePrice = selectedWeight * pricePerKg;
-  const discountAmount = basePrice * (discountPercent / 100);
-  const totalPrice = basePrice - discountAmount;
-
-  // Update display
-  displayWeight.textContent = selectedWeight.toFixed(1) + ' kg';
-  displayBasePrice.textContent = currency + ' ' + basePrice.toFixed(2);
-  
-  if (displayDiscount) {
-    displayDiscount.textContent = '-' + currency + ' ' + discountAmount.toFixed(2);
-  }
-  
-  displayTotalPrice.textContent = currency + ' ' + totalPrice.toFixed(2);
-
-  // Enable/disable buy button
-  buyNowBtn.disabled = selectedWeight <= 0;
-}
-
-function setWeight(kg) {
-  weightInput.value = kg;
-  updatePrice();
-}
-
-function proceedToBuy() {
-  const selectedWeight = parseFloat(weightInput.value);
-  
-  if (selectedWeight <= 0 || selectedWeight > maxWeight) {
-    alert('Please enter a valid weight');
-    return;
-  }
-
-  // Redirect to purchase page with weight parameter
-  window.location.href = `/category1/listings/${listingId}/buy?weight=${selectedWeight}`;
-}
-
-// Attach event listener
-weightInput.addEventListener('input', updatePrice);
-
-// Initialize
-updatePrice();
-</script>
 {% endblock %}

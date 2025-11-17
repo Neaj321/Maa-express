@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Manual Payment - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.verify-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.verify-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.verify-header {
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+  color: white;
+  padding: 32px;
+  text-align: center;
+}
+
+.verify-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 1.8rem;
+}
+
+.verify-body {
+  padding: 32px;
+}
+
+.order-info {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.payment-details {
+  background: #eff6ff;
+  border: 2px solid #1a73e8;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.payment-details h3 {
+  color: #1a73e8;
+  margin: 0 0 16px 0;
+  font-size: 1.2rem;
+}
+
+.receipt-preview {
+  margin-top: 16px;
+}
+
+.receipt-preview img {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+  border: 2px solid #d1d5db;
+}
+
+.receipt-link {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #1a73e8;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.receipt-link:hover {
+  background: #1557b0;
+}
+
+/* ============================================
+   REJECTION REASON SECTION (CRITICAL FIX)
+   ============================================ */
+.rejection-section {
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: none; /* Hidden by default */
+}
+
+.rejection-section.active {
+  display: block;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.rejection-section h4 {
+  color: #92400e;
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+}
+
+.rejection-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 14px;
+  border: 2px solid #f59e0b;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.rejection-textarea:focus {
+  outline: none;
+  border-color: #d97706;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.rejection-hint {
+  font-size: 0.9rem;
+  color: #92400e;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.btn-approve {
+  flex: 1;
+  padding: 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-approve:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+.btn-reject {
+  flex: 1;
+  padding: 16px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-reject:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+}
+
+.btn-back {
+  display: inline-block;
+  padding: 12px 24px;
+  background: #f3f4f6;
+  color: #374151;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 16px;
+}
+
+.btn-back:hover {
+  background: #e5e7eb;
+}
+
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="verify-container">
+  <div class="verify-card">
+    <!-- Header -->
+    <div class="verify-header">
+      <h1>🔍 Verify Manual Payment</h1>
+      <p>Review payment details and approve or reject</p>
+    </div>
+
+    <!-- Body -->
+    <div class="verify-body">
+      <!-- Order Information -->
+      <div class="order-info">
+        <h3 style="margin: 0 0 16px 0; color: #1f2937;">📦 Order Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Order ID</span>
+            <span class="info-value">#{{ buyer_info.id }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Listing</span>
+            <span class="info-value">{{ listing.title }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Buyer</span>
+            <span class="info-value">{{ buyer_info.buyer.full_name }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Purchase Amount</span>
+            <span class="info-value">${{ "%.2f"|format(buyer_info.purchase_price) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Order Date</span>
+            <span class="info-value">{{ buyer_info.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Current Status</span>
+            <span class="info-value" style="color: #f59e0b;">{{ buyer_info.status.replace('_', ' ').title() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Details -->
+      <div class="payment-details">
+        <h3>💳 Payment Details</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Payment Method</span>
+            <span class="info-value">{{ buyer_info.payment_method }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Payment Reference</span>
+            <span class="info-value">{{ buyer_info.payment_reference or 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Transaction ID</span>
+            <span class="info-value" style="font-size: 0.9rem; word-break: break-all;">
+              {{ buyer_info.payment_transaction_id or 'N/A' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Payment Receipt -->
+        {% if buyer_info.payment_receipt_url %}
+        <div class="receipt-preview">
+          <p style="font-weight: 600; color: #1f2937; margin-bottom: 8px;">Payment Receipt:</p>
+          <a href="{{ buyer_info.payment_receipt_url }}" target="_blank" class="receipt-link">
+            📄 View Receipt (Opens in new tab)
+          </a>
+        </div>
+        {% else %}
+        <p style="color: #ef4444; margin-top: 16px; font-weight: 600;">⚠️ No receipt uploaded</p>
+        {% endif %}
+      </div>
+
+      <!-- ============================================
+           ✅ REJECTION REASON SECTION (SHOWN ON DEMAND)
+           ============================================ -->
+      <div id="rejection-section" class="rejection-section">
+        <h4>⚠️ Rejection Reason Required</h4>
+        <textarea 
+          id="rejection-reason-input" 
+          name="rejection_reason"
+          class="rejection-textarea"
+          placeholder="Enter detailed reason for rejection (e.g., 'Payment reference does not match our records', 'Receipt is unclear or invalid', 'Incorrect payment amount')"
+          required
+        ></textarea>
+        <p class="rejection-hint">
+          This reason will be shown to the buyer in their account page. Be specific and professional.
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <form id="verify-form" method="POST">
+        <input type="hidden" id="action-input" name="action" value="">
+        <input type="hidden" id="rejection-reason-hidden" name="rejection_reason" value="">
+
+        <div class="action-buttons">
+          <button type="button" class="btn-approve" onclick="submitAction('approve')">
+            ✅ Approve Payment & Generate Codes
+          </button>
+          <button type="button" class="btn-reject" id="reject-btn" onclick="showRejectionBox()">
+            ❌ Reject Payment
+          </button>
+        </div>
+      </form>
+
+      <a href="{{ url_for('admin.pending_payments') }}" class="btn-back">
+        ← Back to Pending Payments
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+// Global state
+let rejectionBoxShown = false;
+
+// Show rejection reason box
+function showRejectionBox() {
+  const rejectionSection = document.getElementById('rejection-section');
+  const rejectionInput = document.getElementById('rejection-reason-input');
+  const rejectBtn = document.getElementById('reject-btn');
+  
+  if (!rejectionBoxShown) {
+    // First click: Show the rejection box
+    rejectionSection.classList.add('active');
+    rejectionInput.focus();
+    
+    // Scroll to rejection section
+    rejectionSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Change button text
+    rejectBtn.textContent = '✓ Confirm Rejection';
+    rejectBtn.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+    
+    rejectionBoxShown = true;
+  } else {
+    // Second click: Submit rejection
+    submitAction('reject');
+  }
+}
+
+// Submit form
+function submitAction(action) {
+  const form = document.getElementById('verify-form');
+  const actionInput = document.getElementById('action-input');
+  const rejectionInput = document.getElementById('rejection-reason-input');
+  const rejectionHidden = document.getElementById('rejection-reason-hidden');
+  
+  actionInput.value = action;
+  
+  if (action === 'reject') {
+    const reason = rejectionInput.value.trim();
+    
+    // Validate rejection reason
+    if (!reason || reason.length < 10) {
+      alert('⚠️ Please enter a detailed rejection reason (at least 10 characters)');
+      rejectionInput.focus();
+      return;
+    }
+    
+    // Confirm rejection
+    if (!confirm(`Are you sure you want to REJECT this payment?\n\nReason: ${reason}`)) {
+      return;
+    }
+    
+    rejectionHidden.value = reason;
+  } else if (action === 'approve') {
+    // Confirm approval
+    if (!confirm('✅ Approve this payment and generate handover/delivery codes?')) {
+      return;
+    }
+  }
+  
+  form.submit();
+}
+</script>
+{% endblock %}

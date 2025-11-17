@@ -48,12 +48,8 @@ let recaptchaVerifier = null;
 let confirmationResult = null;
 
 // ============================================================================
-// FIREBASE INITIALIZATION
+// FIREBASE INITIALIZATION (COMPAT VERSION - MATCHES TEMPLATE)
 // ============================================================================
-
-const { initializeApp, getApps } = window.firebaseApp;
-const { getAuth, RecaptchaVerifier, signInWithPhoneNumber } = window.firebaseAuth;
-const { getStorage, ref, uploadBytesResumable, getDownloadURL } = window.firebaseStorage;
 
 const firebaseConfig = {
   apiKey: window.FIREBASE_CONFIG?.apiKey || '',
@@ -64,9 +60,13 @@ const firebaseConfig = {
   appId: window.FIREBASE_CONFIG?.appId || ''
 };
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const storage = getStorage(app);
+// Initialize Firebase (compat version loaded from CDN in template)
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const auth = firebase.auth();
+const storage = firebase.storage();
 
 // ============================================================================
 // WIZARD NAVIGATION
@@ -165,13 +165,13 @@ function validateStep(stepNum) {
     const discount = parseFloat(document.querySelector('[name="discount_percent"]').value || 0);
     
     if (!pricePerKg || pricePerKg <= 0 || pricePerKg > 10000) {
-      showMessage(messageEl, 'Price per kg must be between 0 and 10,000', 'error');
+      showMessage(messageEl, 'Price per kg must be between 0.01 and 10,000', 'error');
       document.querySelector('[name="price_per_kg"]').focus();
       return false;
     }
     
     if (!totalWeight || totalWeight <= 0 || totalWeight > 100) {
-      showMessage(messageEl, 'Total weight must be between 0 and 100 kg', 'error');
+      showMessage(messageEl, 'Total weight must be between 0.1 and 100 kg', 'error');
       document.querySelector('[name="total_weight"]').focus();
       return false;
     }
@@ -203,7 +203,7 @@ function validateStep(stepNum) {
     // Validate phone number format
     const phoneLocal = document.querySelector('[name="origin_phone_local"]').value;
     if (phoneLocal.length < 6 || !/^\d+$/.test(phoneLocal)) {
-      showMessage(messageEl, 'Please enter a valid phone number', 'error');
+      showMessage(messageEl, 'Please enter a valid phone number (digits only, min 6)', 'error');
       return false;
     }
     
@@ -324,8 +324,8 @@ async function handleFileUpload(file, type) {
   const filename = `${type}_${timestamp}_${file.name}`;
   const storagePath = `category1_listings/${filename}`;
   
-  const storageRef = ref(storage, storagePath);
-  const uploadTask = uploadBytesResumable(storageRef, file);
+  const storageRef = storage.ref(storagePath);
+  const uploadTask = storageRef.put(file);
   
   const progressBar = document.getElementById(`${type}-progress-bar`);
   const progressContainer = document.getElementById(`${type}-progress`);
@@ -347,7 +347,7 @@ async function handleFileUpload(file, type) {
     },
     async () => {
       try {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
         
         const urlInput = document.getElementById(`${type}-url`);
         if (urlInput) {
@@ -383,22 +383,24 @@ function initializePhoneVerification() {
   }
   
   if (!recaptchaVerifier) {
-    recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+    recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
       size: 'invisible',
       callback: () => {
         console.log('reCAPTCHA verified');
       }
-    }, auth);
+    });
   }
   
   const sendOtpBtn = document.getElementById('send-otp-btn');
   const verifyOtpBtn = document.getElementById('verify-otp-btn');
   
   if (sendOtpBtn) {
+    sendOtpBtn.removeEventListener('click', sendOTP); // Remove old listener
     sendOtpBtn.addEventListener('click', sendOTP);
   }
   
   if (verifyOtpBtn) {
+    verifyOtpBtn.removeEventListener('click', verifyOTP); // Remove old listener
     verifyOtpBtn.addEventListener('click', verifyOTP);
   }
 }
@@ -422,7 +424,7 @@ async function sendOTP() {
   try {
     const fullPhone = wizardData.origin_phone_country_code + wizardData.origin_phone_local;
     
-    confirmationResult = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifier);
+    confirmationResult = await auth.signInWithPhoneNumber(fullPhone, recaptchaVerifier);
     
     if (otpSection) {
       otpSection.style.display = 'block';
@@ -520,18 +522,27 @@ async function submitListing() {
       phone_verified: wizardData.phone_verified
     };
     
-    const url = window.WIZARD_MODE === 'edit' 
+    const url = (window.WIZARD_MODE === 'edit' && window.UPDATE_URL)
       ? window.UPDATE_URL 
-      : window.CREATE_URL;
+      : (window.CREATE_URL || '/category1/new');
     
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+      'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      credentials: 'same-origin'
     });
     
+    // ✅ ADD DIAGNOSTIC LOGGING
+    console.log('=== SUBMISSION DEBUG ===');
+    console.log('Wizard Data:', wizardData);
+    console.log('Mode:', window.WIZARD_MODE);
+    console.log('URL:', window.WIZARD_MODE === 'edit' ? window.UPDATE_URL : window.CREATE_URL);
+    console.log('Payload:', payload);
+    console.log('Response Status:', response.status);
+    console.log('========================');
     const data = await response.json();
     
     if (!response.ok) {
@@ -551,6 +562,51 @@ async function submitListing() {
 }
 
 // ============================================================================
+// PAYPAL PAYMENT
+// ============================================================================
+
+async function handlePayPalPayment(buyerInfoId) {
+    try {
+        showMessage('info', 'Creating PayPal order...', 'step3-message');
+        
+        console.log('🔄 Creating PayPal order for buyer_info:', buyerInfoId);
+        
+        const response = await fetch(`/category1/purchase/${buyerInfoId}/payment/paypal-create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        console.log('📦 PayPal create response:', result);
+        
+        if (result.success && result.approval_url) {
+            console.log('✅ Redirecting to PayPal:', result.approval_url);
+            window.location.href = result.approval_url;
+        } else {
+            console.error('❌ PayPal order creation failed:', result);
+            
+            // Show detailed error message
+            let errorMsg = result.error || 'Failed to create PayPal order';
+            
+            if (result.error_details) {
+                console.error('Error details:', result.error_details);
+                errorMsg += '\n\nDetails: ' + result.error_details;
+            }
+            
+            showMessage('error', errorMsg, 'step3-message');
+            alert('PayPal Error:\n\n' + errorMsg + '\n\nPlease check:\n1. PayPal credentials in .env\n2. PAYPAL_MODE=sandbox\n3. Flask console for errors');
+        }
+    } catch (error) {
+        console.error('❌ PayPal payment error:', error);
+        showMessage('error', 'Network error: ' + error.message, 'step3-message');
+        alert('Failed to connect to PayPal:\n\n' + error.message + '\n\nPlease check your internet connection and try again.');
+    }
+}
+
+// ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 
@@ -560,6 +616,13 @@ function showMessage(element, text, type) {
   element.textContent = text;
   element.className = `form-message ${type}`;
   element.style.display = 'block';
+  
+  // Auto-hide success messages after 5 seconds
+  if (type === 'success') {
+    setTimeout(() => {
+      element.style.display = 'none';
+    }, 5000);
+  }
 }
 
 // ============================================================================

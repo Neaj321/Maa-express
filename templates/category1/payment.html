@@ -1,0 +1,1168 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Payment - Maa Express{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/payment.css') }}">
+<style>
+/* Additional payment instruction styles */
+.payment-instructions {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+  display: none;
+}
+
+.payment-instructions.active {
+  display: block;
+  animation: slideDown 0.3s;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.instruction-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bank-details {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  margin-bottom: 16px;
+}
+
+.bank-details h4 {
+  color: #1a73e8;
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.detail-value {
+  color: #1f2937;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+.payment-link {
+  display: inline-block;
+  background: #1a73e8;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.payment-link:hover {
+  background: #1557b0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+}
+
+.upload-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  margin-top: 20px;
+}
+
+.file-upload-label {
+  display: block;
+  padding: 20px;
+  background: #f0f7ff;
+  border: 2px dashed #1a73e8;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.file-upload-label:hover {
+  background: #e0edff;
+  border-color: #1557b0;
+}
+
+.warning-box {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 16px;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+.warning-box strong {
+  color: #92400e;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Stripe Payment Element Container */
+#payment-element {
+  margin: 20px 0;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.stripe-processing {
+  text-align: center;
+  padding: 20px;
+  color: #6b7280;
+}
+
+.stripe-error {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-container">
+  <div class="payment-header">
+    <h1>💳 Complete Payment</h1>
+    <p>Secure payment for your luggage space booking</p>
+  </div>
+
+  <!-- Order Summary -->
+  <div class="order-summary-box">
+    <h3>Order Summary</h3>
+    <div class="summary-item">
+      <span>Order ID:</span>
+      <span>#{{ buyer_info.id }}</span>
+    </div>
+    <div class="summary-item">
+      <span>Route:</span>
+      <span>{{ listing.origin }} → {{ listing.destination }}</span>
+    </div>
+    <div class="summary-item">
+      <span>Travel Date:</span>
+      <span>{{ listing.travel_date.strftime('%d %b %Y') }}</span>
+    </div>
+    <div class="summary-item">
+      <span>Weight:</span>
+      <span>{{ buyer_info.purchased_weight }} kg</span>
+    </div>
+    <div class="summary-item">
+      <span>Receiver:</span>
+      <span>{{ buyer_info.receiver_fullname }}</span>
+    </div>
+    <div class="summary-item">
+      <span><strong>Total Amount:</strong></span>
+      <span><strong>{{ listing.currency }} ${{ "%.2f"|format(buyer_info.purchase_price) }}</strong></span>
+    </div>
+  </div>
+
+  <!-- Payment Methods -->
+  <div class="payment-methods">
+    <h3>Select Payment Method</h3>
+    
+    <!-- Stripe -->
+    <label class="payment-method" data-method="STRIPE">
+      <input type="radio" name="payment_method" value="STRIPE">
+      <div class="payment-logo">💳</div>
+      <div class="payment-info">
+        <div class="payment-name">Credit/Debit Card (Stripe)</div>
+        <div class="payment-desc">Visa, Mastercard, Amex - Instant</div>
+      </div>
+    </label>
+
+    <!-- PayPal -->
+    <label class="payment-method" data-method="PAYPAL">
+      <input type="radio" name="payment_method" value="PAYPAL">
+      <div class="payment-logo">🅿️</div>
+      <div class="payment-info">
+        <div class="payment-name">PayPal</div>
+        <div class="payment-desc">Pay with your PayPal account - Instant</div>
+      </div>
+    </label>
+
+    <!-- Wise -->
+    <label class="payment-method" data-method="WISE">
+      <input type="radio" name="payment_method" value="WISE">
+      <div class="payment-logo">🌍</div>
+      <div class="payment-info">
+        <div class="payment-name">Wise</div>
+        <div class="payment-desc">International money transfer - 1-2 days</div>
+      </div>
+    </label>
+
+    <!-- Bank Account -->
+    <label class="payment-method" data-method="BANK_ACCOUNT">
+      <input type="radio" name="payment_method" value="BANK_ACCOUNT">
+      <div class="payment-logo">🏦</div>
+      <div class="payment-info">
+        <div class="payment-name">Bank Account</div>
+        <div class="payment-desc">Direct bank transfer - 1-3 days</div>
+      </div>
+    </label>
+
+    <!-- PayID -->
+    <label class="payment-method" data-method="PAYID">
+      <input type="radio" name="payment_method" value="PAYID">
+      <div class="payment-logo">🆔</div>
+      <div class="payment-info">
+        <div class="payment-name">PayID (Australia Only)</div>
+        <div class="payment-desc">Instant bank transfer - Australia only</div>
+      </div>
+    </label>
+
+    <!-- Mobile Banking -->
+    <label class="payment-method" data-method="MOBILE_BANKING_BKASH_NAGAD">
+      <input type="radio" name="payment_method" value="MOBILE_BANKING_BKASH_NAGAD">
+      <div class="payment-logo">📲</div>
+      <div class="payment-info">
+        <div class="payment-name">Mobile Banking</div>
+        <div class="payment-desc">bKash, Nagad - Instant (Bangladesh)</div>
+      </div>
+    </label>
+
+    <!-- bKash to Bank -->
+    <label class="payment-method" data-method="BKASH_TO_BANK">
+      <input type="radio" name="payment_method" value="BKASH_TO_BANK">
+      <div class="payment-logo">💳</div>
+      <div class="payment-info">
+        <div class="payment-name">bKash to Bank</div>
+        <div class="payment-desc">Transfer from bKash to card - Instant</div>
+      </div>
+    </label>
+  </div>
+
+  <!-- ============================================
+       PAYMENT INSTRUCTIONS (Dynamic)
+       ============================================ -->
+
+  <!-- STRIPE Instructions -->
+  <div id="instructions-STRIPE" class="payment-instructions">
+    <div class="instruction-title">
+      <span>💳</span>
+      <span>Stripe Card Payment</span>
+    </div>
+    
+    {% if stripe_client_secret %}
+      <p>Enter your card details below to complete payment:</p>
+      
+      <!-- Stripe Payment Element will be mounted here -->
+      <div id="payment-element"></div>
+      
+      <!-- Error messages -->
+      <div id="payment-message" class="stripe-error" style="display: none;"></div>
+      
+      <!-- Submit button -->
+      <button type="button" id="stripe-submit-btn" class="pay-btn">
+        Pay {{ listing.currency }} ${{ "%.2f"|format(buyer_info.purchase_price) }}
+      </button>
+    {% else %}
+      <p style="color: #ef4444;">Stripe is not available for {{ listing.currency }}. Please use another payment method.</p>
+    {% endif %}
+  </div>
+
+  <!-- PAYPAL Instructions -->
+ <!-- Find the PAYPAL Instructions section (around line 320) and replace with: -->
+<!-- ...existing Stripe instructions... -->
+
+<!-- WISE Instructions -->
+<div id="instructions-WISE" class="payment-instructions">
+  <div class="instruction-title">
+    <span>🌍</span>
+    <span>Wise Payment Instructions</span>
+  </div>
+  
+  <div class="bank-details">
+    <h4>Wise Transfer Details</h4>
+    <div class="detail-row">
+      <span class="detail-label">Recipient Name:</span>
+      <span class="detail-value">Maa Express</span>
+    </div>
+    <div class="detail-row">
+     
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Pay via Wise:</span>
+    <span class="detail-value">
+        <a href="https://wise.com/pay/business/neajmohammad" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           style="color:#0077cc; text-decoration: underline; font-weight: 600;">
+            Pay Via Wise
+        </a>
+    </span>
+    </div>
+  </div>
+
+  <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin: 16px 0; border: 2px solid #f59e0b;">
+    <strong style="color: #92400e;">📝 How to Pay via Wise:</strong>
+    <ol style="color: #92400e; margin: 12px 0 0 20px; line-height: 1.8;">
+      <li>Click on above Wise Payment Link</li>
+      <li>Send <strong>{{ listing.currency }} ${{ "%.2f"|format(buyer_info.purchase_price) }}</strong> to the recipient above</li>
+      <li>Copy the <strong>transaction reference number</strong></li>
+      <li>Take a screenshot of the completed transfer</li>
+      <li>Upload your receipt and reference below</li>
+    </ol>
+  </div>
+
+  <!-- Upload Section -->
+  <div class="upload-section">
+    <div class="form-group">
+      <label class="form-label">Payment Reference Number *</label>
+      <input 
+        type="text" 
+        id="wise-reference" 
+        class="form-input" 
+        placeholder="Enter Wise transaction reference"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Upload Payment Receipt *</label>
+      <label for="wise-receipt" class="file-upload-label">
+        <span style="font-size: 2rem;">📄</span><br>
+        <span>Click to upload receipt (PNG, JPG, PDF)</span>
+      </label>
+      <input type="file" id="wise-receipt" accept="image/*,application/pdf" style="display:none;" />
+      <div id="wise-file-name" style="margin-top:10px; color:#10b981; font-weight:600;"></div>
+    </div>
+
+    <button type="button" class="pay-btn" onclick="submitManualPayment('WISE')">
+      Submit Wise Payment
+    </button>
+  </div>
+
+  <div class="warning-box">
+    <strong>⚠️ Important:</strong>
+    Your order will be confirmed within 1-2 business days after we verify your Wise transfer.
+  </div>
+</div>
+
+
+
+<!-- ... rest of payment instructions (PayPal, Bank, etc.) ... -->
+<!-- PAYPAL Instructions -->
+<div id="instructions-PAYPAL" class="payment-instructions">
+  <div class="instruction-title">
+    <span>🅿️</span>
+    <span>PayPal Payment</span>
+  </div>
+  
+  <p>Click the button below to pay securely with PayPal:</p>
+  
+  <!-- PayPal button container -->
+  <div id="paypal-button-container" style="margin: 20px 0;"></div>
+  
+  <!-- Status messages -->
+  <div id="paypal-message" class="stripe-error" style="display: none;"></div>
+  
+  <!-- Processing indicator -->
+  <div id="paypal-processing" class="stripe-processing" style="display: none;">
+    <p>Processing PayPal payment...</p>
+  </div>
+</div>
+
+<!-- ... rest of the payment instructions ... -->
+
+<!-- Add PayPal SDK script BEFORE the main script section -->
+<script src="https://www.paypal.com/sdk/js?client-id={{ config.PAYPAL_CLIENT_ID }}&currency={{ listing.currency }}"></script>
+
+<!-- In the main script section (around line 820), add PayPal initialization: -->
+
+<script>
+// ============================================================================
+// PAYPAL INITIALIZATION
+// ============================================================================
+
+{% if config.PAYPAL_CLIENT_ID %}
+let paypalInitialized = false;
+
+function initializePayPalButton() {
+  console.log('🔧 Initializing PayPal button...');
+  
+  if (paypalInitialized) {
+    console.log('✅ PayPal already initialized');
+    return;
+  }
+
+  const paypalContainer = document.getElementById('paypal-button-container');
+  if (!paypalContainer) {
+    console.error('❌ PayPal container not found');
+    return;
+  }
+
+  // Clear any existing buttons
+  paypalContainer.innerHTML = '';
+
+  try {
+    paypal.Buttons({
+      // Set up the transaction
+      createOrder: async function() {
+        console.log('🔄 Creating PayPal order...');
+        
+        try {
+          const response = await fetch('{{ url_for("category1.paypal_create_order", buyer_info_id=buyer_info.id) }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            console.log('✅ PayPal order created:', data.order_id);
+            return data.order_id;
+          } else {
+            throw new Error(data.error || 'Failed to create PayPal order');
+          }
+        } catch (error) {
+          console.error('❌ PayPal order creation error:', error);
+          document.getElementById('paypal-message').textContent = error.message;
+          document.getElementById('paypal-message').style.display = 'block';
+          throw error;
+        }
+      },
+
+      // Handle successful payment
+      onApprove: function(data) {
+        console.log('✅ PayPal payment approved:', data);
+        
+        document.getElementById('paypal-processing').style.display = 'block';
+        document.getElementById('paypal-message').style.display = 'none';
+
+        // Redirect to return URL with payment details
+        const returnUrl = '{{ url_for("category1.paypal_return", buyer_info_id=buyer_info.id) }}' + 
+                         `?paymentId=${data.orderID}&PayerID=${data.payerID}`;
+        
+        window.location.href = returnUrl;
+      },
+
+      // Handle cancelled payment
+      onCancel: function(data) {
+        console.log('⚠️ PayPal payment cancelled');
+        document.getElementById('paypal-message').textContent = 'Payment cancelled. You can try again.';
+        document.getElementById('paypal-message').style.display = 'block';
+        document.getElementById('paypal-message').style.background = '#fef3c7';
+        document.getElementById('paypal-message').style.color = '#92400e';
+      },
+
+      // Handle errors
+      onError: function(err) {
+        console.error('❌ PayPal error:', err);
+        document.getElementById('paypal-message').textContent = 'An error occurred. Please try again or use another payment method.';
+        document.getElementById('paypal-message').style.display = 'block';
+      },
+
+      // Style options
+      style: {
+        layout: 'vertical',
+        color: 'gold',
+        shape: 'rect',
+        label: 'paypal',
+        height: 45
+      }
+
+    }).render('#paypal-button-container');
+
+    paypalInitialized = true;
+    console.log('✅ PayPal button rendered successfully');
+
+  } catch (error) {
+    console.error('❌ PayPal button initialization failed:', error);
+    document.getElementById('paypal-message').textContent = 'Failed to initialize PayPal. Please try another payment method.';
+    document.getElementById('paypal-message').style.display = 'block';
+  }
+}
+{% else %}
+function initializePayPalButton() {
+  document.getElementById('paypal-message').textContent = 'PayPal is not configured. Please use another payment method.';
+  document.getElementById('paypal-message').style.display = 'block';
+}
+{% endif %}
+
+// Rest of your existing script...
+// (Keep all Stripe and manual payment code)
+
+// Update payment method selection to initialize PayPal
+document.querySelectorAll('.payment-method').forEach(method => {
+  method.addEventListener('click', function() {
+    console.log('🔘 Payment method selected:', this.dataset.method);
+    
+    // Remove all selected states
+    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+    document.querySelectorAll('.payment-instructions').forEach(i => i.classList.remove('active'));
+    
+    // Add selected state
+    this.classList.add('selected');
+    this.querySelector('input[type="radio"]').checked = true;
+    
+    // Show instructions
+    selectedMethod = this.dataset.method;
+    const instructions = document.getElementById(`instructions-${selectedMethod}`);
+    
+    if (instructions) {
+      instructions.classList.add('active');
+      
+      // Initialize Stripe if selected
+      if (selectedMethod === 'STRIPE' && '{{ stripe_client_secret }}') {
+        console.log('🔧 Stripe selected - initializing...');
+        setTimeout(() => {
+          initializeStripePayment();
+        }, 100);
+      }
+      
+      // Initialize PayPal if selected
+      if (selectedMethod === 'PAYPAL' && '{{ config.PAYPAL_CLIENT_ID }}') {
+        console.log('🔧 PayPal selected - initializing...');
+        setTimeout(() => {
+          initializePayPalButton();
+        }, 100);
+      }
+    }
+  });
+});
+
+// ... rest of your manual payment code ...
+
+
+</script>
+
+  <!-- BANK_ACCOUNT Instructions -->
+  <div id="instructions-BANK_ACCOUNT" class="payment-instructions">
+    <div class="instruction-title">
+      <span>🏦</span>
+      <span>Bank Transfer Instructions</span>
+    </div>
+    
+    <div class="bank-details">
+      <h4>🇦🇺 Australian Bank Account</h4>
+      <div class="detail-row">
+        <span class="detail-label">Account Name:</span>
+        <span class="detail-value">Neaj Mohammad</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">BSB:</span>
+        <span class="detail-value">062 692</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Account Number:</span>
+        <span class="detail-value">8094 4939</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Bank Name:</span>
+        <span class="detail-value">CommBank of Australia</span>
+      </div>
+    </div>
+
+    <div class="bank-details">
+      <h4>🇧🇩 Bangladesh Bank Account</h4>
+      <div class="detail-row">
+        <span class="detail-label">Account Name:</span>
+        <span class="detail-value">Neaj Mohammad</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Bank Name:</span>
+        <span class="detail-value">IBBL Bangladesh</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Account Number:</span>
+        <span class="detail-value">20500180201977002</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Branch:</span>
+        <span class="detail-value">Akhaura, Brahman Baria</span>
+      </div>
+    </div>
+
+    <div class="upload-section">
+      <p><strong>After payment, upload your receipt:</strong></p>
+      
+      <div class="form-group">
+        <label class="form-label">Payment Reference Number *</label>
+        <input 
+          type="text" 
+          id="bank-reference" 
+          class="form-input" 
+          placeholder="Enter your bank transaction reference"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Upload Payment Receipt *</label>
+        <label for="bank-receipt" class="file-upload-label">
+          <span style="font-size: 2rem;">📄</span><br>
+          <span>Click to upload receipt (PNG, JPG, PDF)</span>
+        </label>
+        <input type="file" id="bank-receipt" accept="image/*,application/pdf" style="display:none;" />
+        <div id="bank-file-name" style="margin-top:10px; color:#10b981; font-weight:600;"></div>
+      </div>
+
+      <button type="button" class="pay-btn" onclick="submitManualPayment('BANK_ACCOUNT')">
+        Submit Bank Payment
+      </button>
+    </div>
+
+    <div class="warning-box">
+      <strong>⚠️ Important:</strong>
+      Your order will be confirmed within 1-3 business days after we verify your payment.
+    </div>
+  </div>
+
+  <!-- PAYID Instructions -->
+  <div id="instructions-PAYID" class="payment-instructions">
+    <div class="instruction-title">
+      <span>🆔</span>
+      <span>PayID Payment Instructions</span>
+    </div>
+    
+    <div class="bank-details">
+      <h4>PayID Details (Australia Only)</h4>
+      <div class="detail-row">
+        <span class="detail-label">PayID:</span>
+        <span class="detail-value">0414446248</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Name:</span>
+        <span class="detail-value">Neaj Mohammad</span>
+      </div>
+    </div>
+
+    <div class="upload-section">
+      <div class="form-group">
+        <label class="form-label">Payment Reference Number *</label>
+        <input 
+          type="text" 
+          id="payid-reference" 
+          class="form-input" 
+          placeholder="Enter your PayID transaction reference"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Upload Payment Receipt *</label>
+        <label for="payid-receipt" class="file-upload-label">
+          <span style="font-size: 2rem;">📄</span><br>
+          <span>Click to upload receipt (PNG, JPG, PDF)</span>
+        </label>
+        <input type="file" id="payid-receipt" accept="image/*,application/pdf" style="display:none;" />
+        <div id="payid-file-name" style="margin-top:10px; color:#10b981; font-weight:600;"></div>
+      </div>
+
+      <button type="button" class="pay-btn" onclick="submitManualPayment('PAYID')">
+        Submit PayID Payment
+      </button>
+    </div>
+  </div>
+
+  <!-- MOBILE_BANKING Instructions -->
+  <div id="instructions-MOBILE_BANKING_BKASH_NAGAD" class="payment-instructions">
+    <div class="instruction-title">
+      <span>📲</span>
+      <span>Mobile Banking Payment</span>
+    </div>
+    
+    <div class="bank-details">
+      <h4>📱 bKash</h4>
+      <div class="detail-row">
+        <span class="detail-label">Number:</span>
+        <span class="detail-value">01560059783</span>
+      </div>
+    </div>
+
+    <div class="bank-details">
+      <h4>📱 Nagad</h4>
+      <div class="detail-row">
+        <span class="detail-label">Number:</span>
+        <span class="detail-value">01560059783</span>
+      </div>
+    </div>
+
+    <div class="upload-section">
+      <div class="form-group">
+        <label class="form-label">Transaction ID *</label>
+        <input 
+          type="text" 
+          id="mobile-reference" 
+          class="form-input" 
+          placeholder="Enter your bKash/Nagad transaction ID"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Upload Payment Screenshot *</label>
+        <label for="mobile-receipt" class="file-upload-label">
+          <span style="font-size: 2rem;">📱</span><br>
+          <span>Click to upload screenshot</span>
+        </label>
+        <input type="file" id="mobile-receipt" accept="image/*" style="display:none;" />
+        <div id="mobile-file-name" style="margin-top:10px; color:#10b981; font-weight:600;"></div>
+      </div>
+
+      <button type="button" class="pay-btn" onclick="submitManualPayment('MOBILE_BANKING_BKASH_NAGAD')">
+        Submit Mobile Payment
+      </button>
+    </div>
+  </div>
+
+  <!-- BKASH_TO_BANK Instructions -->
+  <div id="instructions-BKASH_TO_BANK" class="payment-instructions">
+    <div class="instruction-title">
+      <span>💳</span>
+      <span>bKash to Bank Instructions</span>
+    </div>
+    
+    <div class="bank-details">
+      <h4>Payment Steps</h4>
+      <ol style="padding-left: 20px; line-height: 1.8;">
+        <li>Open your bKash app</li>
+        <li>Select <strong>"bKash to Bank"</strong></li>
+        <li>Enter this Visa debit card number:</li>
+      </ol>
+      <div class="detail-row">
+        <span class="detail-label">Card Number:</span>
+        <span class="detail-value">4170 3380 4379 2266</span>
+      </div>
+    </div>
+
+    <div class="upload-section">
+      <div class="form-group">
+        <label class="form-label">Transaction ID *</label>
+        <input 
+          type="text" 
+          id="bkash-reference" 
+          class="form-input" 
+          placeholder="Enter your bKash transaction ID"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Upload Payment Screenshot *</label>
+        <label for="bkash-receipt" class="file-upload-label">
+          <span style="font-size: 2rem;">📱</span><br>
+          <span>Click to upload screenshot</span>
+        </label>
+        <input type="file" id="bkash-receipt" accept="image/*" style="display:none;" />
+        <div id="bkash-file-name" style="margin-top:10px; color:#10b981; font-weight:600;"></div>
+      </div>
+
+      <button type="button" class="pay-btn" onclick="submitManualPayment('BKASH_TO_BANK')">
+        Submit bKash Payment
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================
+     FIREBASE SDK (For file uploads)
+     ============================================ -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+  import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+  import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js';
+
+  const firebaseConfig = {
+    apiKey: "{{ config.FIREBASE_API_KEY }}",
+    authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+    projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+    storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+    appId: "{{ config.FIREBASE_APP_ID }}"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const storage = getStorage(app);
+
+  // Authenticate before allowing uploads
+  let isAuthenticated = false;
+
+  signInAnonymously(auth)
+    .then(() => {
+      console.log('✅ Firebase authenticated for file uploads');
+      isAuthenticated = true;
+    })
+    .catch((error) => {
+      console.error('❌ Firebase auth failed:', error);
+      alert('Authentication failed. Please refresh the page.');
+    });
+
+  window.uploadReceiptToFirebase = async (file) => {
+    if (!isAuthenticated) {
+      throw new Error('Please wait for authentication to complete and try again.');
+    }
+
+    // Validate file before upload
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      throw new Error('File too large. Maximum size is 10MB.');
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('Invalid file type. Only JPG, PNG, and PDF are allowed.');
+    }
+
+    try {
+      const timestamp = Date.now();
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const storageRef = ref(storage, `payment_receipts/buyer_{{ buyer_info.id }}_${timestamp}_${sanitizedName}`);
+      
+      console.log('📤 Uploading file:', sanitizedName);
+      await uploadBytes(storageRef, file);
+      
+      const downloadURL = await getDownloadURL(storageRef);
+      console.log('✅ Upload successful:', downloadURL);
+      
+      return downloadURL;
+    } catch (error) {
+      console.error('❌ Upload error:', error);
+      
+      if (error.code === 'storage/unauthorized') {
+        throw new Error('Permission denied. Please contact support.');
+      } else if (error.code === 'storage/quota-exceeded') {
+        throw new Error('Storage quota exceeded. Please contact support.');
+      } else {
+        throw new Error('Upload failed: ' + error.message);
+      }
+    }
+  };
+</script>
+
+<!-- ============================================
+     STRIPE SDK & PAYMENT PROCESSING
+     ============================================ -->
+{% if stripe_client_secret %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+// ============================================================================
+// STRIPE INITIALIZATION
+// ============================================================================
+
+const stripe = Stripe('{{ config.STRIPE_PUBLIC_KEY }}');
+let stripeElements = null;
+let stripePaymentElement = null;
+let stripeInitialized = false;
+
+// Initialize Stripe Elements when Stripe payment method is selected
+function initializeStripePayment() {
+  console.log('🔧 Initializing Stripe Payment Element...');
+  
+  if (stripeInitialized) {
+    console.log('✅ Stripe already initialized');
+    return;
+  }
+
+  const clientSecret = '{{ stripe_client_secret }}';
+  
+  if (!clientSecret) {
+    console.error('❌ No Stripe client secret available');
+    document.getElementById('payment-message').textContent = 'Stripe configuration error. Please contact support.';
+    document.getElementById('payment-message').style.display = 'block';
+    return;
+  }
+
+  try {
+    // Create Elements instance
+    stripeElements = stripe.elements({
+      clientSecret: clientSecret,
+      appearance: {
+        theme: 'stripe',
+        variables: {
+          colorPrimary: '#1a73e8',
+          colorBackground: '#ffffff',
+          colorText: '#1f2937',
+          colorDanger: '#ef4444',
+          fontFamily: 'system-ui, sans-serif',
+          borderRadius: '8px',
+        },
+      },
+    });
+
+    // Create Payment Element
+    stripePaymentElement = stripeElements.create('payment');
+    
+    // Mount to DOM
+    stripePaymentElement.mount('#payment-element');
+    
+    stripeInitialized = true;
+    console.log('✅ Stripe Payment Element mounted successfully');
+
+    // Listen for errors
+    stripePaymentElement.on('ready', () => {
+      console.log('✅ Stripe Payment Element ready for input');
+    });
+
+    stripePaymentElement.on('change', (event) => {
+      const messageDiv = document.getElementById('payment-message');
+      if (event.error) {
+        messageDiv.textContent = event.error.message;
+        messageDiv.style.display = 'block';
+      } else {
+        messageDiv.style.display = 'none';
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Stripe initialization error:', error);
+    document.getElementById('payment-message').textContent = 'Failed to initialize payment form. Please refresh the page.';
+    document.getElementById('payment-message').style.display = 'block';
+  }
+}
+
+// Handle Stripe payment submission
+async function processStripePayment() {
+  console.log('💳 Processing Stripe payment...');
+  
+  const submitBtn = document.getElementById('stripe-submit-btn');
+  const messageDiv = document.getElementById('payment-message');
+  
+  // Check if Stripe is initialized
+  if (!stripeInitialized || !stripeElements || !stripePaymentElement) {
+    console.error('❌ Stripe not initialized');
+    messageDiv.textContent = 'Payment form not ready. Please wait a moment and try again.';
+    messageDiv.style.display = 'block';
+    return;
+  }
+
+  // Disable button and show loading state
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Processing payment...';
+  messageDiv.style.display = 'none';
+
+  try {
+    console.log('🔄 Confirming payment with Stripe...');
+    
+    const { error } = await stripe.confirmPayment({
+      elements: stripeElements,
+      confirmParams: {
+        return_url: window.location.origin + '{{ url_for("category1.stripe_return", buyer_info_id=buyer_info.id) }}',
+      },
+    });
+
+    if (error) {
+      // Payment failed - show error to user
+      console.error('❌ Stripe payment error:', error);
+      messageDiv.textContent = error.message;
+      messageDiv.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Pay {{ listing.currency }} ${{ "%.2f"|format(buyer_info.purchase_price) }}';
+    }
+    // If no error, user will be redirected to return_url automatically
+    
+  } catch (err) {
+    console.error('❌ Unexpected Stripe error:', err);
+    messageDiv.textContent = 'An unexpected error occurred. Please try again.';
+    messageDiv.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Pay {{ listing.currency }} ${{ "%.2f"|format(buyer_info.purchase_price) }}';
+  }
+}
+
+// Attach event listener to submit button
+document.addEventListener('DOMContentLoaded', () => {
+  const submitBtn = document.getElementById('stripe-submit-btn');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', processStripePayment);
+    console.log('✅ Stripe submit button event listener attached');
+  }
+});
+</script>
+{% endif %}
+
+<!-- ============================================
+     PAYMENT METHOD SELECTION & MANUAL PAYMENTS
+     ============================================ -->
+<script>
+let selectedMethod = null;
+
+// Payment method selection
+document.querySelectorAll('.payment-method').forEach(method => {
+  method.addEventListener('click', function() {
+    console.log('🔘 Payment method selected:', this.dataset.method);
+    
+    // Remove all selected states
+    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+    document.querySelectorAll('.payment-instructions').forEach(i => i.classList.remove('active'));
+    
+    // Add selected state
+    this.classList.add('selected');
+    this.querySelector('input[type="radio"]').checked = true;
+    
+    // Show instructions
+    selectedMethod = this.dataset.method;
+    const instructions = document.getElementById(`instructions-${selectedMethod}`);
+    
+    if (instructions) {
+      instructions.classList.add('active');
+      
+      // Initialize Stripe if selected and not already initialized
+      if (selectedMethod === 'STRIPE' && '{{ stripe_client_secret }}') {
+        console.log('🔧 Stripe selected - initializing...');
+        // Give the DOM a moment to show the container
+        setTimeout(() => {
+          initializeStripePayment();
+        }, 100);
+      }
+    }
+  });
+});
+
+// File upload handlers for manual payments
+['wise', 'bank', 'payid', 'mobile', 'bkash'].forEach(prefix => {
+  const input = document.getElementById(`${prefix}-receipt`);
+  const nameDiv = document.getElementById(`${prefix}-file-name`);
+  
+  if (input && nameDiv) {
+    input.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        nameDiv.textContent = `✓ Selected: ${this.files[0].name}`;
+      }
+    });
+  }
+});
+
+// Manual Payment Submission
+async function submitManualPayment(method) {
+  console.log('📤 Submitting manual payment:', method);
+  
+  const prefix = method === 'WISE' ? 'wise' :
+                 method === 'BANK_ACCOUNT' ? 'bank' :
+                 method === 'PAYID' ? 'payid' :
+                 method === 'MOBILE_BANKING_BKASH_NAGAD' ? 'mobile' :
+                 method === 'BKASH_TO_BANK' ? 'bkash' : null;
+  
+  if (!prefix) {
+    console.error('❌ Invalid payment method:', method);
+    return;
+  }
+  
+  const referenceInput = document.getElementById(`${prefix}-reference`);
+  const fileInput = document.getElementById(`${prefix}-receipt`);
+  
+  // Validate inputs
+  if (!referenceInput || !referenceInput.value.trim()) {
+    alert('Please enter payment reference number');
+    referenceInput.focus();
+    return;
+  }
+  
+  if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+    alert('Please upload payment receipt');
+    return;
+  }
+  
+  const submitBtn = event.target;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Uploading receipt...';
+  
+  try {
+    // Upload receipt to Firebase
+    console.log('📤 Uploading receipt to Firebase...');
+    const receiptURL = await window.uploadReceiptToFirebase(fileInput.files[0]);
+    console.log('✅ Receipt uploaded:', receiptURL);
+    
+    submitBtn.textContent = 'Submitting payment...';
+    
+    // Submit to backend
+    const response = await fetch('{{ url_for("category1.process_payment", buyer_info_id=buyer_info.id) }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        payment_method: method,
+        payment_reference: referenceInput.value.trim(),
+        payment_receipt_url: receiptURL
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('✅ Payment submitted successfully');
+      submitBtn.textContent = '✓ Payment Submitted!';
+      submitBtn.style.background = '#10b981';
+      
+      setTimeout(() => {
+        window.location.href = result.redirect_url;
+      }, 1000);
+    } else {
+      console.error('❌ Payment submission failed:', result.error);
+      alert('Error: ' + result.error);
+      submitBtn.disabled = false;
+      submitBtn.textContent = `Submit ${method} Payment`;
+    }
+  } catch (error) {
+    console.error('❌ Manual payment error:', error);
+    alert('Error: ' + error.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = `Submit ${method} Payment`;
+  }
+}
+
+window.submitManualPayment = submitManualPayment;
+</script>
+{% endblock %}

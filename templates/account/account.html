@@ -1,13 +1,16 @@
 {% extends "base.html" %}
+{% block title %}My Account - Maa Express{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
-
-<!-- Page Header -->
+<!-- Account Header -->
 <div class="account-header">
   <div class="account-header-content">
-    <h1>My Account</h1>
-    <p class="account-subtitle">Welcome back, {{ user.full_name or user.email }}!</p>
+    <h1>👤 My Account</h1>
+    <p class="account-subtitle">Welcome back, {{ user.full_name }}</p>
   </div>
 </div>
 
@@ -16,537 +19,485 @@
   {% if messages %}
     <div class="flash-messages">
       {% for category, message in messages %}
-        <div class="flash-message flash-{{ category }}">
-          {{ message }}
-        </div>
+        <div class="flash-message flash-{{ category }}">{{ message }}</div>
       {% endfor %}
     </div>
   {% endif %}
 {% endwith %}
 
-<!-- Account Tabs -->
-<div class="account-tabs">
-  <button class="tab-btn active" data-tab="my-listings">
-    <span class="tab-icon">📋</span>
-    <span class="tab-text">My Listings</span>
-  </button>
-  <button class="tab-btn" data-tab="purchases">
-    <span class="tab-icon">🛒</span>
-    <span class="tab-text">My Purchases</span>
-  </button>
-  <button class="tab-btn" data-tab="payout">
-    <span class="tab-icon">💳</span>
-    <span class="tab-text">Payout Details</span>
-  </button>
-  <button class="tab-btn" data-tab="profile">
-    <span class="tab-icon">👤</span>
-    <span class="tab-text">Profile</span>
-  </button>
-</div>
-
-<!-- Tab Content Container -->
-<div class="tab-content-wrapper">
-
+<!-- Main Account Content -->
+<div class="account-container">
+  
   <!-- ============================================
-       MY LISTINGS TAB
+       USER PROFILE CARD
        ============================================ -->
-  <div class="tab-content active" id="my-listings">
-    <div class="section-card">
-      <h2 class="section-title">
-        <span class="title-icon">🛄</span>
-        Category 1 - Luggage Space
-      </h2>
+  <section class="account-section">
+    <h2 class="section-title">👤 Profile Information</h2>
+    
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <div class="avatar-circle">
+          {{ user.full_name[0]|upper }}
+        </div>
+      </div>
       
-      {% if cat1_listings %}
-        <div class="listings-grid">
-          {% for listing in cat1_listings %}
-            <div class="listing-card">
-              {% if listing.image_url %}
-                <img src="{{ listing.image_url }}" alt="{{ listing.title }}" class="listing-image">
+      <div class="profile-details">
+        <div class="profile-detail-grid">
+          <div class="profile-detail-item">
+            <span class="profile-label">Full Name:</span>
+            <span class="profile-value">{{ user.full_name }}</span>
+          </div>
+          
+          <div class="profile-detail-item">
+            <span class="profile-label">Email:</span>
+            <div class="profile-value">
+              {{ user.email }}
+              {% if user.email_verified %}
+                <span class="verified-badge">✓ Verified</span>
               {% else %}
-                <div class="listing-image-placeholder">No Image</div>
+                <span class="unverified-badge">✗ Not Verified</span>
               {% endif %}
-              
-              <div class="listing-body">
-                <h3 class="listing-title">{{ listing.title }}</h3>
-                
-                <div class="listing-route">
-                  <span class="route-from">{{ listing.origin }}</span>
-                  <span class="route-arrow">→</span>
-                  <span class="route-to">{{ listing.destination }}</span>
-                </div>
-                
-                <div class="listing-meta">
-                  <span class="meta-item">📅 {{ listing.travel_date }}</span>
-                  <span class="meta-item status-{{ listing.admin_status }}">
-                    {{ listing.admin_status|capitalize }}
-                  </span>
-                </div>
-                
-                <div class="listing-price">
-                  ${{ "%.2f"|format(listing.final_price) }}
-                </div>
-                
-                <div class="listing-actions">
-                  <a href="{{ url_for('account.edit_category1', listing_id=listing.id) }}" class="btn-edit">
-                    Edit
-                  </a>
-                  <form method="post" action="{{ url_for('account.delete_category1', listing_id=listing.id) }}" 
-                        onsubmit="return confirm('Are you sure you want to delete this listing?');">
-                    <button type="submit" class="btn-delete">Delete</button>
-                  </form>
-                </div>
-              </div>
             </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="empty-state">No Category 1 listings yet. <a href="{{ url_for('category1.create_listing') }}">Create one now!</a></p>
-      {% endif %}
-    </div>
-
-    <div class="section-card">
-      <h2 class="section-title">
-        <span class="title-icon">🧭</span>
-        Category 2 - Travel Companions
-      </h2>
-      
-      {% if cat2_listings %}
-        <div class="listings-grid">
-          {% for listing in cat2_listings %}
-            <div class="listing-card">
-              {% if listing.image_url %}
-                <img src="{{ listing.image_url }}" alt="{{ listing.name }}" class="listing-image">
+          </div>
+          
+          <div class="profile-detail-item">
+            <span class="profile-label">Phone:</span>
+            <div class="profile-value">
+              {{ user.phone or 'Not provided' }}
+              {% if user.phone_verified %}
+                <span class="verified-badge">✓ Verified</span>
               {% else %}
-                <div class="listing-image-placeholder">No Image</div>
+                <span class="unverified-badge">✗ Not Verified</span>
               {% endif %}
-              
-              <div class="listing-body">
-                <h3 class="listing-title">{{ listing.name }}</h3>
-                
-                <div class="listing-route">
-                  <span class="route-from">{{ listing.travel_from or 'N/A' }}</span>
-                  <span class="route-arrow">→</span>
-                  <span class="route-to">{{ listing.travel_to or 'N/A' }}</span>
-                </div>
-                
-                <div class="listing-meta">
-                  <span class="meta-item">📅 {{ listing.travel_date or 'N/A' }}</span>
-                  <span class="meta-item">{{ listing.gender|capitalize }}</span>
-                  <span class="meta-item status-{{ listing.admin_status }}">
-                    {{ listing.admin_status|capitalize }}
-                  </span>
-                </div>
-                
-                <div class="listing-price">
-                  ${{ "%.2f"|format(listing.final_price) }}
-                </div>
-                
-                <div class="listing-actions">
-                  <a href="{{ url_for('account.edit_category2', listing_id=listing.id) }}" class="btn-edit">
-                    Edit
-                  </a>
-                  <form method="post" action="{{ url_for('account.delete_category2', listing_id=listing.id) }}" 
-                        onsubmit="return confirm('Are you sure you want to delete this listing?');">
-                    <button type="submit" class="btn-delete">Delete</button>
-                  </form>
-                </div>
-              </div>
             </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="empty-state">No Category 2 listings yet.</p>
-      {% endif %}
-    </div>
-
-    <div class="section-card">
-      <h2 class="section-title">
-        <span class="title-icon">🛍️</span>
-        Category 3 - Authentic Products
-      </h2>
-      
-      {% if cat3_products %}
-        <div class="listings-grid">
-          {% for product in cat3_products %}
-            <div class="listing-card">
-              {% if product.image_url %}
-                <img src="{{ product.image_url }}" alt="{{ product.product_name }}" class="listing-image">
+          </div>
+          
+          <div class="profile-detail-item">
+            <span class="profile-label">Member Since:</span>
+            <span class="profile-value">{{ user.created_at.strftime('%B %d, %Y') }}</span>
+          </div>
+          
+          <div class="profile-detail-item">
+            <span class="profile-label">Account Status:</span>
+            <span class="profile-value">
+              {% if user.is_active %}
+                <span class="status-badge status-approved">Active</span>
               {% else %}
-                <div class="listing-image-placeholder">No Image</div>
+                <span class="status-badge status-rejected">Inactive</span>
               {% endif %}
-              
-              <div class="listing-body">
-                <h3 class="listing-title">{{ product.product_name }}</h3>
-                
-                <div class="listing-meta">
-                  <span class="meta-item">🌍 {{ product.product_origin_country or 'N/A' }}</span>
-                  <span class="meta-item">📦 Stock: {{ product.stock }}</span>
-                  <span class="meta-item status-{{ product.admin_status }}">
-                    {{ product.admin_status|capitalize }}
-                  </span>
-                </div>
-                
-                <div class="listing-price">
-                  ${{ "%.2f"|format(product.final_price) }}
-                </div>
-                
-                <div class="listing-actions">
-                  <a href="{{ url_for('account.edit_category3', product_id=product.id) }}" class="btn-edit">
-                    Edit
-                  </a>
-                  <form method="post" action="{{ url_for('account.delete_category3', product_id=product.id) }}" 
-                        onsubmit="return confirm('Are you sure you want to delete this product?');">
-                    <button type="submit" class="btn-delete">Delete</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="empty-state">No Category 3 products yet.</p>
-      {% endif %}
-    </div>
-  </div>
-
-  <!-- ============================================
-       PURCHASES TAB
-       ============================================ -->
-  <div class="tab-content" id="purchases">
-    <div class="section-card">
-      <h2 class="section-title">
-        <span class="title-icon">🛄</span>
-        Category 1 Purchases
-      </h2>
-      
-      {% if cat1_purchases %}
-        <table class="purchases-table">
-          <thead>
-            <tr>
-              <th>Listing</th>
-              <th>Receiver</th>
-              <th>Delivery Location</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for purchase in cat1_purchases %}
-              <tr>
-                <td>
-                  {% if purchase.listing %}
-                    {{ purchase.listing.title }}
-                  {% else %}
-                    N/A
-                  {% endif %}
-                </td>
-                <td>{{ purchase.receiver_fullname }}</td>
-                <td>{{ purchase.delivery_location }}, {{ purchase.delivery_postcode }}</td>
-                <td>{{ purchase.created_at.strftime('%Y-%m-%d') }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p class="empty-state">No Category 1 purchases yet.</p>
-      {% endif %}
-    </div>
-
-    <div class="section-card">
-      <h2 class="section-title">
-        <span class="title-icon">🧭</span>
-        Category 2 Purchases
-      </h2>
-      
-      {% if cat2_purchases %}
-        <table class="purchases-table">
-          <thead>
-            <tr>
-              <th>Listing</th>
-              <th>Contact Name</th>
-              <th>Email</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for purchase in cat2_purchases %}
-              <tr>
-                <td>
-                  {% if purchase.listing %}
-                    {{ purchase.listing.name }}
-                  {% else %}
-                    N/A
-                  {% endif %}
-                </td>
-                <td>{{ purchase.full_name }}</td>
-                <td>{{ purchase.email }}</td>
-                <td>{{ purchase.created_at.strftime('%Y-%m-%d') }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p class="empty-state">No Category 2 purchases yet.</p>
-      {% endif %}
-    </div>
-
-    <div class="section-card">
-      <h2 class="section-title">
-        <span class="title-icon">🛍️</span>
-        Category 3 Orders
-      </h2>
-      
-      {% if cat3_purchases %}
-        <table class="purchases-table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Quantity</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for order in cat3_purchases %}
-              <tr>
-                <td>
-                  {% if order.product %}
-                    {{ order.product.product_name }}
-                  {% else %}
-                    N/A
-                  {% endif %}
-                </td>
-                <td>{{ order.quantity }}</td>
-                <td>${{ "%.2f"|format(order.total_amount) }}</td>
-                <td><span class="status-{{ order.status }}">{{ order.status|capitalize }}</span></td>
-                <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p class="empty-state">No Category 3 orders yet.</p>
-      {% endif %}
-    </div>
-  </div>
-
-  <!-- ============================================
-       PAYOUT DETAILS TAB
-       ============================================ -->
-  <div class="tab-content" id="payout">
-    <div class="section-card">
-      <h2 class="section-title">
-        <span class="title-icon">💳</span>
-        Payout Method
-      </h2>
-      
-      <form method="post" action="{{ url_for('account.update_payout') }}" class="payout-form">
-        <div class="form-group">
-          <label class="form-label">Select Payout Method:</label>
-          <select name="payout_method_type" id="payout-method-select" class="form-input" required>
-            <option value="none" {% if user.payout_method_type == 'none' %}selected{% endif %}>None (Set Later)</option>
-            <option value="bank" {% if user.payout_method_type == 'bank' %}selected{% endif %}>Bank Account</option>
-            <option value="card" {% if user.payout_method_type == 'card' %}selected{% endif %}>Debit Card</option>
-            <option value="mobile_banking" {% if user.payout_method_type == 'mobile_banking' %}selected{% endif %}>Mobile Banking</option>
-            <option value="payid" {% if user.payout_method_type == 'payid' %}selected{% endif %}>PayID</option>
-          </select>
-        </div>
-
-        <!-- Bank Account Fields -->
-        <div id="bank-fields" class="payout-method-fields" style="display: none;">
-          <h3 class="subsection-title">Bank Account Details</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Account Holder Name:</label>
-              <input type="text" name="bank_account_name" class="form-input" 
-                     value="{{ user.bank_account_name or '' }}" placeholder="John Doe">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Bank Name:</label>
-              <input type="text" name="bank_name" class="form-input" 
-                     value="{{ user.bank_name or '' }}" placeholder="Commonwealth Bank">
-            </div>
+            </span>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">BSB/Routing Number:</label>
-              <input type="text" name="bank_bsb_or_routing" class="form-input" 
-                     value="{{ user.bank_bsb_or_routing or '' }}" placeholder="123-456">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Account Number:</label>
-              <input type="text" name="bank_account_number" class="form-input" 
-                     value="{{ user.bank_account_number or '' }}" placeholder="12345678">
-            </div>
+          
+          <div class="profile-detail-item">
+            <span class="profile-label">Role:</span>
+            <span class="profile-value">
+              {% if user.is_admin %}
+                <span class="admin-badge">👑 Admin</span>
+              {% else %}
+                <span class="user-badge">User</span>
+              {% endif %}
+            </span>
           </div>
-        </div>
-
-        <!-- Card Fields -->
-        <div id="card-fields" class="payout-method-fields" style="display: none;">
-          <h3 class="subsection-title">Debit Card Details</h3>
-          <p class="security-note">⚠️ For security, we only store the last 4 digits</p>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Card Holder Name:</label>
-              <input type="text" name="card_holder_name" class="form-input" 
-                     value="{{ user.card_holder_name or '' }}" placeholder="John Doe">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Card Brand:</label>
-              <select name="card_brand" class="form-input">
-                <option value="">-- Select --</option>
-                <option value="Visa" {% if user.card_brand == 'Visa' %}selected{% endif %}>Visa</option>
-                <option value="Mastercard" {% if user.card_brand == 'Mastercard' %}selected{% endif %}>Mastercard</option>
-                <option value="Amex" {% if user.card_brand == 'Amex' %}selected{% endif %}>American Express</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Last 4 Digits:</label>
-              <input type="text" name="card_last4" class="form-input" 
-                     value="{{ user.card_last4 or '' }}" placeholder="1234" maxlength="4" pattern="[0-9]{4}">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Expiry Month:</label>
-              <input type="number" name="card_exp_month" class="form-input" 
-                     value="{{ user.card_exp_month or '' }}" placeholder="12" min="1" max="12">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Expiry Year:</label>
-              <input type="number" name="card_exp_year" class="form-input" 
-                     value="{{ user.card_exp_year or '' }}" placeholder="2025" min="2024">
-            </div>
-          </div>
-        </div>
-
-        <!-- Mobile Banking Fields -->
-        <div id="mobile-banking-fields" class="payout-method-fields" style="display: none;">
-          <h3 class="subsection-title">Mobile Banking Details</h3>
-          <div class="form-group">
-            <label class="form-label">Mobile Banking Number:</label>
-            <input type="text" name="mobile_banking_number" class="form-input" 
-                   value="{{ user.mobile_banking_number or '' }}" placeholder="+61 412 345 678">
-          </div>
-        </div>
-
-        <!-- PayID Fields -->
-        <div id="payid-fields" class="payout-method-fields" style="display: none;">
-          <h3 class="subsection-title">PayID Details</h3>
-          <div class="form-group">
-            <label class="form-label">PayID Identifier (Email or Phone):</label>
-            <input type="text" name="payid_identifier" class="form-input" 
-                   value="{{ user.payid_identifier or '' }}" placeholder="[email protected] or +61412345678">
-          </div>
-        </div>
-
-        <button type="submit" class="btn-primary">Save Payout Details</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- ============================================
-       PROFILE TAB
-       ============================================ -->
-  <div class="tab-content" id="profile">
-    <div class="section-card">
-      <h2 class="section-title">
-        <span class="title-icon">👤</span>
-        Account Information
-      </h2>
-      
-      <div class="profile-info">
-        <div class="info-row">
-          <span class="info-label">Full Name:</span>
-          <span class="info-value">{{ user.full_name or 'Not set' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Email:</span>
-          <span class="info-value">{{ user.email }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Phone:</span>
-          <span class="info-value">{{ user.phone or 'Not set' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Member Since:</span>
-          <span class="info-value">{{ user.created_at.strftime('%B %d, %Y') }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Email Verified:</span>
-          <span class="info-value">
-            {% if user.email_verified %}
-              <span class="badge-success">✓ Verified</span>
-            {% else %}
-              <span class="badge-warning">Not Verified</span>
-            {% endif %}
-          </span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Phone Verified:</span>
-          <span class="info-value">
-            {% if user.phone_verified %}
-              <span class="badge-success">✓ Verified</span>
-            {% else %}
-              <span class="badge-warning">Not Verified</span>
-            {% endif %}
-          </span>
         </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- ============================================
+       MY PURCHASES SECTION - WITH CODES DISPLAY
+       ============================================ -->
+  <section class="account-section">
+    <h2 class="section-title">📦 My Purchases</h2>
+    
+    {% if cat1_purchases %}
+      <div class="purchases-grid">
+        {% for purchase in cat1_purchases %}
+          <div class="purchase-card">
+            <div class="purchase-header">
+              <div class="purchase-title-group">
+                <h3 class="purchase-title">
+                  Order #{{ purchase.id }}
+                </h3>
+                <p class="purchase-route">
+                  {% if purchase.listing %}
+                    <span class="route-from">{{ purchase.listing.origin }}</span>
+                    <span class="route-arrow">→</span>
+                    <span class="route-to">{{ purchase.listing.destination }}</span>
+                  {% else %}
+                    <span style="color: #9ca3af;">Listing Unavailable</span>
+                  {% endif %}
+                </p>
+              </div>
+              <span class="status-badge status-{{ purchase.status }}">
+                {{ purchase.status.replace('_', ' ')|title }}
+              </span>
+            </div>
+
+            <div class="purchase-body">
+              <!-- Purchase Meta Info -->
+              <div class="purchase-meta">
+                <div class="meta-item">
+                  <span class="meta-icon">📅</span>
+                  <span>{{ purchase.created_at.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-icon">⚖️</span>
+                  <span>{{ purchase.purchased_weight or 0 }} kg</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-icon">💰</span>
+                  <span>
+                    {% if purchase.listing %}
+                      {{ purchase.listing.currency }}
+                    {% endif %}
+                    ${{ "%.2f"|format(purchase.purchase_price if purchase.purchase_price else 0.00) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Purchase Details Grid -->
+              <div class="purchase-details-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Payment Method:</span>
+                  <span class="detail-value">{{ purchase.payment_method or 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Payment Status:</span>
+                  <span class="detail-value">
+                    {% if purchase.payment_status == 'paid' %}
+                      <span class="verified-badge">✓ Paid</span>
+                    {% elif purchase.payment_status == 'manual_pay' %}
+                      <span style="background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">⏳ Verifying</span>
+                    {% elif purchase.payment_status == 'failed' %}
+                      <span style="background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">✗ Failed</span>
+                    {% else %}
+                      <span class="unverified-badge">{{ purchase.payment_status|capitalize }}</span>
+                    {% endif %}
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Receiver:</span>
+                  <span class="detail-value">{{ purchase.receiver_fullname or 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Delivery Address:</span>
+                  <span class="detail-value">
+                    {{ purchase.delivery_address or 'N/A' }}, {{ purchase.delivery_country or '' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- ============================================
+                   ✅ CODES DISPLAY - FIXED VERSION
+                   ============================================ -->
+              {% if purchase.payment_status == 'paid' %}
+                <!-- ✅ PAYMENT VERIFIED - SHOW CODES -->
+                <div style="background: #d1fae5; padding: 14px; border-radius: 8px; margin-top: 12px; border: 2px solid #10b981;">
+                  <strong style="color: #065f46;">✅ Payment Verified</strong>
+                  <p style="color: #065f46; margin: 8px 0 0 0; font-size: 0.9rem;">
+                    Your payment has been verified. Handover and delivery codes are below.
+                  </p>
+                </div>
+
+                <!-- ✅ CODES DISPLAY -->
+                <div style="background: #eff6ff; padding: 20px; border-radius: 8px; margin-top: 16px; border: 2px solid #1a73e8;">
+                  <h4 style="color: #1a73e8; margin: 0 0 16px 0; font-size: 1.1rem;">🔐 Your Verification Codes</h4>
+                  
+                  <div style="display: grid; gap: 16px;">
+                    <!-- Handover Code -->
+                    <div style="background: white; padding: 14px; border-radius: 6px; border: 1px solid #d1d5db;">
+                      <p style="margin: 0 0 6px 0; color: #6b7280; font-size: 0.85rem; font-weight: 600;">
+                        🔑 HANDOVER CODE (Give to seller at origin)
+                      </p>
+                      <code style="font-size: 1.4rem; font-weight: 700; color: #1a73e8; letter-spacing: 2px; font-family: 'Courier New', monospace;">
+                        {{ purchase.handover_code if purchase.handover_code and purchase.handover_code != 'PENDING' else 'PENDING - Contact Admin' }}
+                      </code>
+                      {% if purchase.handover_verified_at %}
+                        <p style="margin: 8px 0 0 0; color: #10b981; font-size: 0.85rem; font-weight: 600;">
+                          ✓ Verified on {{ purchase.handover_verified_at.strftime('%d %b %Y at %H:%M') }}
+                        </p>
+                      {% endif %}
+                    </div>
+
+                    <!-- Delivery Code -->
+                    <div style="background: white; padding: 14px; border-radius: 6px; border: 1px solid #d1d5db;">
+                      <p style="margin: 0 0 6px 0; color: #6b7280; font-size: 0.85rem; font-weight: 600;">
+                        🎯 DELIVERY CODE (Give to receiver at destination)
+                      </p>
+                      <code style="font-size: 1.4rem; font-weight: 700; color: #10b981; letter-spacing: 2px; font-family: 'Courier New', monospace;">
+                        {{ purchase.delivery_code if purchase.delivery_code and purchase.delivery_code != 'PENDING' else 'PENDING - Contact Admin' }}
+                      </code>
+                      {% if purchase.delivery_verified_at %}
+                        <p style="margin: 8px 0 0 0; color: #10b981; font-size: 0.85rem; font-weight: 600;">
+                          ✓ Verified on {{ purchase.delivery_verified_at.strftime('%d %b %Y at %H:%M') }}
+                        </p>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Instructions -->
+                  <div style="margin-top: 16px; padding: 12px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                    <p style="margin: 0; color: #92400e; font-size: 0.85rem; line-height: 1.6;">
+                      <strong>⚠️ IMPORTANT:</strong><br>
+                      • Share <strong>Handover Code</strong> only when you physically hand over the parcel<br>
+                      • Share <strong>Delivery Code</strong> with your receiver for pickup at destination<br>
+                      • Keep these codes secure and never share publicly
+                    </p>
+                  </div>
+                </div>
+
+              {% elif purchase.payment_status == 'manual_pay' %}
+                <!-- ⏳ PAYMENT UNDER REVIEW -->
+                <div style="background: #fef3c7; padding: 14px; border-radius: 8px; margin-top: 12px; border: 2px solid #f59e0b;">
+                  <strong style="color: #92400e;">⏳ Payment Under Review</strong>
+                  <p style="color: #92400e; margin: 8px 0 0 0; font-size: 0.9rem;">
+                    We are verifying your payment. You will receive your codes within 24 hours.
+                  </p>
+                </div>
+
+              {% elif purchase.payment_status == 'failed' %}
+                <!-- ❌ PAYMENT REJECTED -->
+                <div style="background: #fee2e2; padding: 14px; border-radius: 8px; margin-top: 12px; border: 2px solid #ef4444;">
+                  <strong style="color: #991b1b;">❌ Payment Rejected</strong>
+                  <p style="color: #991b1b; margin: 8px 0 0 0; font-size: 0.9rem;">
+                    Your payment was rejected. Please contact support or try again.
+                  </p>
+                  
+                  <!-- ✅ SHOW REJECTION REASON -->
+                  {% if purchase.note and '[ADMIN REJECTION' in purchase.note %}
+                    <div style="margin-top: 12px; padding: 12px; background: white; border-radius: 6px; border-left: 4px solid #ef4444;">
+                      <strong style="color: #991b1b; font-size: 0.85rem;">Rejection Reason:</strong>
+                      <p style="color: #991b1b; margin: 4px 0 0 0; font-size: 0.85rem;">
+                        {{ purchase.note.split('[ADMIN REJECTION')[1].split(']')[1].strip() if '[ADMIN REJECTION' in purchase.note else 'No reason provided' }}
+                      </p>
+                    </div>
+                  {% endif %}
+                </div>
+
+              {% elif purchase.payment_status == 'pending' %}
+                <!-- ⚠️ PAYMENT PENDING -->
+                <div style="background: #fee2e2; padding: 14px; border-radius: 8px; margin-top: 12px; border: 2px solid #ef4444;">
+                  <strong style="color: #991b1b;">⚠️ Payment Pending</strong>
+                  <p style="color: #991b1b; margin: 8px 0 0 0; font-size: 0.9rem;">
+                    Please complete your payment to receive handover and delivery codes.
+                  </p>
+                  <a href="{{ url_for('category1.payment_page', buyer_info_id=purchase.id) }}" style="display: inline-block; margin-top: 12px; padding: 8px 16px; background: #ef4444; color: white; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                    Complete Payment
+                  </a>
+                </div>
+              {% endif %}
+
+              <!-- View Details Button -->
+              <div class="purchase-actions">
+                <a href="{{ url_for('category1.detail', listing_id=purchase.listing_id) if purchase.listing else '#' }}" 
+                   class="btn-view-purchase">
+                  👁️ View Listing
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>No purchases yet</p>
+        <a href="{{ url_for('main.index') }}" class="btn-primary">Browse Listings</a>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- ============================================
+       MY LISTINGS SECTION
+       ============================================ -->
+  <section class="account-section">
+    <div class="section-header">
+      <h2 class="section-title">✈️ My Listings</h2>
+      <a href="{{ url_for('category1.create_listing') }}" class="btn-create">
+        ➕ Create New Listing
+      </a>
+    </div>
+    
+    {% if cat1_listings %}
+      <div class="listings-grid">
+        {% for listing in cat1_listings %}
+          <div class="listing-card">
+            <div class="listing-header">
+              <h3 class="listing-title">{{ listing.title }}</h3>
+              <span class="status-badge status-{{ listing.admin_status }}">
+                {{ listing.admin_status|capitalize }}
+              </span>
+            </div>
+            
+            <div class="listing-body">
+              <p class="listing-route">
+                <span class="route-from">{{ listing.origin }}</span>
+                <span class="route-arrow">→</span>
+                <span class="route-to">{{ listing.destination }}</span>
+              </p>
+              
+              <div class="listing-meta">
+                <div class="meta-item">
+                  <span class="meta-icon">📅</span>
+                  <span>{{ listing.travel_date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-icon">⚖️</span>
+                  <span>{{ listing.total_weight }} kg</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-icon">💰</span>
+                  <span>{{ listing.currency }} ${{ "%.2f"|format(listing.final_price) }}</span>
+                </div>
+              </div>
+              
+              <div class="listing-actions">
+                <a href="{{ url_for('category1.detail', listing_id=listing.id) }}" 
+                   class="btn-view">
+                  👁️ View
+                </a>
+                <a href="{{ url_for('account.edit_category1', listing_id=listing.id) }}" 
+                   class="btn-edit">
+                  ✏️ Edit
+                </a>
+                <button 
+                  class="btn-delete" 
+                  onclick="if(confirm('Are you sure you want to delete this listing?')) { fetch('{{ url_for('account.delete_category1', listing_id=listing.id) }}', {method: 'POST'}).then(() => window.location.reload()); }"
+                >
+                  🗑️ Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">✈️</div>
+        <p>No listings yet</p>
+        <a href="{{ url_for('category1.create_listing') }}" class="btn-primary">Create Your First Listing</a>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- ============================================
+       SALES DASHBOARD LINK
+       ============================================ -->
+  <section class="account-section">
+    <div class="sales-cta">
+      <div class="sales-cta-content">
+        <h3>📊 View Your Sales</h3>
+        <p>Manage orders for your listings, verify handovers and deliveries</p>
+      </div>
+      <a href="{{ url_for('account.sales_dashboard') }}" class="btn-sales">
+        Go to Sales Dashboard →
+      </a>
+    </div>
+  </section>
+
+  <!-- ============================================
+       PAYOUT SETTINGS SECTION
+       ============================================ -->
+  <section class="account-section">
+    <h2 class="section-title">💳 Payout Settings (You will receive payment here)</h2>
+    
+    <form method="post" action="{{ url_for('account.update_payout') }}" class="payout-form">
+      <div class="form-group">
+        <label class="form-label">Payout Method</label>
+        <select name="payout_method_type" class="form-select" required>
+          <option value="none" {% if not user.payout_method_type or user.payout_method_type == 'none' %}selected{% endif %}>None (Set later)</option>
+          <option value="bank" {% if user.payout_method_type == 'bank' %}selected{% endif %}>Bank Account</option>
+          <option value="card" {% if user.payout_method_type == 'card' %}selected{% endif %}>Card</option>
+          <option value="mobile_banking" {% if user.payout_method_type == 'mobile_banking' %}selected{% endif %}>Mobile Banking</option>
+          <option value="payid" {% if user.payout_method_type == 'payid' %}selected{% endif %}>PayID</option>
+        </select>
+      </div>
+
+      <!-- Bank Account Fields -->
+      <div id="bank-fields" style="display: {% if user.payout_method_type == 'bank' %}block{% else %}none{% endif %};">
+        <div class="form-group">
+          <label class="form-label">Account Name</label>
+          <input type="text" name="bank_account_name" class="form-input" value="{{ user.bank_account_name or '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bank Name</label>
+          <input type="text" name="bank_name" class="form-input" value="{{ user.bank_name or '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">BSB/Routing Number</label>
+          <input type="text" name="bank_bsb_or_routing" class="form-input" value="{{ user.bank_bsb_or_routing or '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Number</label>
+          <input type="text" name="bank_account_number" class="form-input" value="{{ user.bank_account_number or '' }}">
+        </div>
+      </div>
+
+      <!-- Card Fields -->
+      <div id="card-fields" style="display: {% if user.payout_method_type == 'card' %}block{% else %}none{% endif %};">
+        <div class="form-group">
+          <label class="form-label">Cardholder Name</label>
+          <input type="text" name="card_holder_name" class="form-input" value="{{ user.card_holder_name or '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Card Last 4 Digits</label>
+          <input type="text" name="card_last4" class="form-input" value="{{ user.card_last4 or '' }}" maxlength="4">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Card Brand</label>
+          <select name="card_brand" class="form-select">
+            <option value="">--Select--</option>
+            <option value="Visa" {% if user.card_brand == 'Visa' %}selected{% endif %}>Visa</option>
+            <option value="Mastercard" {% if user.card_brand == 'Mastercard' %}selected{% endif %}>Mastercard</option>
+            <option value="Amex" {% if user.card_brand == 'Amex' %}selected{% endif %}>American Express</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Mobile Banking Fields -->
+      <div id="mobile-fields" style="display: {% if user.payout_method_type == 'mobile_banking' %}block{% else %}none{% endif %};">
+        <div class="form-group">
+          <label class="form-label">Mobile Banking Number - Bkash, Rocket, Nagad, etc.</label>
+          <input type="text" name="mobile_banking_number" class="form-input" value="{{ user.mobile_banking_number or '' }}">
+        </div>
+      </div>
+
+      <!-- PayID Fields -->
+      <div id="payid-fields" style="display: {% if user.payout_method_type == 'payid' %}block{% else %}none{% endif %};">
+        <div class="form-group">
+          <label class="form-label">PayID (Email or Phone)</label>
+          <input type="text" name="payid_identifier" class="form-input" value="{{ user.payid_identifier or '' }}">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary">💾 Save Payout Settings</button>
+    </form>
+  </section>
 
 </div>
 
 <script>
-// Tab switching
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    // Remove active class from all tabs and content
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    
-    // Add active class to clicked tab and corresponding content
-    btn.classList.add('active');
-    const tabId = btn.dataset.tab;
-    document.getElementById(tabId).classList.add('active');
-  });
-});
-
-// Payout method selector
-const payoutSelect = document.getElementById('payout-method-select');
-const bankFields = document.getElementById('bank-fields');
-const cardFields = document.getElementById('card-fields');
-const mobileBankingFields = document.getElementById('mobile-banking-fields');
-const payidFields = document.getElementById('payid-fields');
-
-function togglePayoutFields() {
-  const method = payoutSelect.value;
+// Toggle payout fields based on selected method
+document.querySelector('select[name="payout_method_type"]').addEventListener('change', function() {
+  const method = this.value;
   
-  // Hide all fields first
-  bankFields.style.display = 'none';
-  cardFields.style.display = 'none';
-  mobileBankingFields.style.display = 'none';
-  payidFields.style.display = 'none';
+  // Hide all fields
+  document.getElementById('bank-fields').style.display = 'none';
+  document.getElementById('card-fields').style.display = 'none';
+  document.getElementById('mobile-fields').style.display = 'none';
+  document.getElementById('payid-fields').style.display = 'none';
   
-  // Show relevant fields
+  // Show selected method fields
   if (method === 'bank') {
-    bankFields.style.display = 'block';
+    document.getElementById('bank-fields').style.display = 'block';
   } else if (method === 'card') {
-    cardFields.style.display = 'block';
+    document.getElementById('card-fields').style.display = 'block';
   } else if (method === 'mobile_banking') {
-    mobileBankingFields.style.display = 'block';
+    document.getElementById('mobile-fields').style.display = 'block';
   } else if (method === 'payid') {
-    payidFields.style.display = 'block';
+    document.getElementById('payid-fields').style.display = 'block';
   }
-}
-
-// Initialize on page load
-togglePayoutFields();
-
-// Update on change
-payoutSelect.addEventListener('change', togglePayoutFields);
+});
 </script>
 
 {% endblock %}
